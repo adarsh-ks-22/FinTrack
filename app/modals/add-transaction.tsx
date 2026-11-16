@@ -23,7 +23,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { z } from 'zod';
 import { formatInTimeZone } from 'date-fns-tz';
-import { isValid, parse, format } from 'date-fns';
+import { isValid, parse, format, isAfter, startOfDay, isSameDay } from 'date-fns';
 
 import { database } from '@/db/database';
 import { Transaction } from '@/db/models/Transaction';
@@ -56,6 +56,19 @@ const transactionSchema = z.object({
         return isValid(parsed);
       },
       { message: 'Enter a valid date in DD/MM/YYYY HH:mm format' }
+    )
+    .refine(
+      (v) => {
+        const match = v.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+        if (!match) return true;
+        const [, day, month, year, hour, min] = match;
+        const isoStr = `${year}-${month}-${day}T${hour}:${min}:00+05:30`;
+        const txTime = new Date(isoStr).getTime();
+        if (isNaN(txTime)) return false;
+        // Do not allow future date/time (with 1-minute grace for clock skew)
+        return txTime <= Date.now() + 60 * 1000;
+      },
+      { message: 'Future date and time cannot be selected. Please enter current or past date.' }
     ),
 });
 
@@ -119,6 +132,13 @@ export default function AddTransactionModal() {
       setShowCalendarModal(false);
       return;
     }
+    const now = new Date();
+    // Strictly prevent selecting any future date
+    if (isAfter(startOfDay(selectedDate), startOfDay(now))) {
+      setShowCalendarModal(false);
+      return;
+    }
+
     let timePart = '';
     if (dateTimeStr) {
       const parts = dateTimeStr.trim().split(/\s+/);
@@ -128,11 +148,22 @@ export default function AddTransactionModal() {
     }
     if (!timePart) {
       try {
-        timePart = formatInTimeZone(new Date(), IST_TIMEZONE, 'HH:mm');
+        timePart = formatInTimeZone(now, IST_TIMEZONE, 'HH:mm');
       } catch {
         timePart = '12:00';
       }
     }
+
+    // If selected date is today, clamp timePart so it does not exceed current IST time
+    if (isSameDay(selectedDate, now)) {
+      try {
+        const currentIstTime = formatInTimeZone(now, IST_TIMEZONE, 'HH:mm');
+        if (timePart > currentIstTime) {
+          timePart = currentIstTime;
+        }
+      } catch {}
+    }
+
     try {
       const datePart = format(selectedDate, 'dd/MM/yyyy');
       setDateTimeStr(`${datePart} ${timePart}`);
@@ -209,7 +240,7 @@ export default function AddTransactionModal() {
       } else {
         validDate = new Date();
       }
-      if (isNaN(validDate.getTime())) {
+      if (isNaN(validDate.getTime()) || validDate.getTime() > Date.now()) {
         validDate = new Date();
       }
       try {
@@ -279,6 +310,14 @@ export default function AddTransactionModal() {
     const parsedAmount = parseFloat(amount);
     const utcTimestamp = parseIstToUtcTimestamp(dateTimeStr);
     const effectiveCategory = getEffectiveCategory();
+
+    if (utcTimestamp > Date.now() + 60 * 1000) {
+      setErrors((e) => ({
+        ...e,
+        dateTimeStr: 'Future date and time cannot be selected. Please enter current or past date.',
+      }));
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -576,7 +615,7 @@ export default function AddTransactionModal() {
                 <Text className="mt-1 text-xs text-red-500">{errors.dateTimeStr}</Text>
               ) : (
                 <Text className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                  Format: DD/MM/YYYY HH:mm • Tap calendar icon to pick date
+                  Format: DD/MM/YYYY HH:mm (current or past) • Tap calendar icon to pick date
                 </Text>
               )}
             </View>
@@ -613,12 +652,15 @@ export default function AddTransactionModal() {
         onClose={() => setShowCalendarModal(false)}
         onSelectDate={handleSelectCalendarDate}
         title="Select Transaction Date"
+        maxDate={new Date()}
         initialDate={(() => {
           if (dateTimeStr) {
             const dateOnly = dateTimeStr.trim().split(/\s+/)[0];
             try {
               const parsed = parse(dateOnly, 'dd/MM/yyyy', new Date());
-              if (isValid(parsed) && !isNaN(parsed.getTime())) return parsed;
+              if (isValid(parsed) && !isNaN(parsed.getTime())) {
+                return isAfter(parsed, new Date()) ? new Date() : parsed;
+              }
             } catch {}
           }
           return new Date();

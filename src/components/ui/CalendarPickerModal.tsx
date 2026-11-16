@@ -99,11 +99,23 @@ export function CalendarPickerModal({
     }
   }, [viewMonth]);
 
+  const isPrevMonthDisabled = minDate
+    ? isSameMonth(getSafeDate(viewMonth), minDate) ||
+      isBefore(startOfMonth(getSafeDate(viewMonth)), startOfMonth(minDate))
+    : false;
+
+  const isNextMonthDisabled = maxDate
+    ? isSameMonth(getSafeDate(viewMonth), maxDate) ||
+      isAfter(startOfMonth(getSafeDate(viewMonth)), startOfMonth(maxDate))
+    : false;
+
   const handlePrevMonth = () => {
+    if (isPrevMonthDisabled) return;
     setViewMonth((prev) => subMonths(getSafeDate(prev), 1));
   };
 
   const handleNextMonth = () => {
+    if (isNextMonthDisabled) return;
     setViewMonth((prev) => addMonths(getSafeDate(prev), 1));
   };
 
@@ -123,6 +135,8 @@ export function CalendarPickerModal({
 
   const handleConfirm = () => {
     const target = getSafeDate(selectedDate);
+    if (maxDate && isAfter(target, endOfDay(maxDate))) return;
+    if (minDate && isBefore(target, startOfDay(minDate))) return;
     onSelectDate(target);
     onClose();
   };
@@ -174,10 +188,13 @@ export function CalendarPickerModal({
               <View className="mb-3 flex-row items-center justify-between">
                 <TouchableOpacity
                   onPress={handlePrevMonth}
-                  className="rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800"
+                  disabled={isPrevMonthDisabled}
+                  className={`rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800 ${
+                    isPrevMonthDisabled ? 'opacity-25' : ''
+                  }`}
                   hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
                 >
-                  <Ionicons name="chevron-back" size={16} color="#4f46e5" />
+                  <Ionicons name="chevron-back" size={16} color={isPrevMonthDisabled ? '#9ca3af' : '#4f46e5'} />
                 </TouchableOpacity>
 
                 <View className="flex-row items-center gap-2">
@@ -196,10 +213,13 @@ export function CalendarPickerModal({
 
                 <TouchableOpacity
                   onPress={handleNextMonth}
-                  className="rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800"
+                  disabled={isNextMonthDisabled}
+                  className={`rounded-xl border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800 ${
+                    isNextMonthDisabled ? 'opacity-25' : ''
+                  }`}
                   hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
                 >
-                  <Ionicons name="chevron-forward" size={16} color="#4f46e5" />
+                  <Ionicons name="chevron-forward" size={16} color={isNextMonthDisabled ? '#9ca3af' : '#4f46e5'} />
                 </TouchableOpacity>
               </View>
 

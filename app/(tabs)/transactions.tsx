@@ -388,6 +388,7 @@ export default function TransactionsScreen() {
             ? parseCustomDate(customFrom) || undefined
             : undefined
         }
+        maxDate={new Date()}
       />
     </SafeAreaView>
   );

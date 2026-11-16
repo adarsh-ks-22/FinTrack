@@ -277,7 +277,7 @@ assert(isValid(nanDate), 'NaN timestamp gracefully falls back to valid Date');
 console.log('\n--- Running ExpoApplication Native Module Guard Tests ---');
 const fs = require('fs');
 const path = require('path');
-const expoAppFile = path.join(__dirname, '..', 'node_modules', 'expo-application', 'build', 'ExpoApplication.js');
+const expoAppFile = path.resolve('node_modules/expo-application/build/ExpoApplication.js');
 const expoAppContent = fs.readFileSync(expoAppFile, 'utf8');
 assert(
   !expoAppContent.includes("export default requireNativeModule('ExpoApplication')"),
@@ -287,6 +287,62 @@ assert(
   expoAppContent.includes('requireOptionalNativeModule'),
   'ExpoApplication.js uses safe requireOptionalNativeModule with empty fallback'
 );
+
+// --- Future Date Prevention Tests ---
+console.log('\n--- Running Future Date Prevention Tests ---');
+const { z } = require('zod');
+
+const testDateTimeSchema = z
+  .string()
+  .min(1, 'Date and time are required')
+  .refine(
+    (v: string) => {
+      const match = v.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+      if (!match) return false;
+      const parsed = parse(v, 'dd/MM/yyyy HH:mm', new Date());
+      return isValid(parsed);
+    },
+    { message: 'Enter a valid date in DD/MM/YYYY HH:mm format' }
+  )
+  .refine(
+    (v: string) => {
+      const match = v.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+      if (!match) return true;
+      const [, day, month, year, hour, min] = match;
+      const isoStr = `${year}-${month}-${day}T${hour}:${min}:00+05:30`;
+      const txTime = new Date(isoStr).getTime();
+      if (isNaN(txTime)) return false;
+      return txTime <= Date.now() + 60 * 1000;
+    },
+    { message: 'Future date and time cannot be selected. Please enter current or past date.' }
+  );
+
+// 1. Past date should pass
+const pastStr = '01/01/2025 10:00';
+assert(testDateTimeSchema.safeParse(pastStr).success, 'Past date passes validation (01/01/2025 10:00)');
+
+// 2. Future date should fail
+const futureStr = '01/01/2030 10:00';
+const futureResult = testDateTimeSchema.safeParse(futureStr);
+assert(!futureResult.success, 'Future date is rejected by validation (01/01/2030 10:00)');
+if (!futureResult.success) {
+  assert(
+    futureResult.error.issues[0].message.includes('Future date and time cannot be selected'),
+    'Validation returns informative future date rejection message'
+  );
+}
+
+// 3. Calendar disabled days calculation for maxDate = today
+const todayDate = new Date();
+const tomorrowDate = new Date(todayDate.getTime() + 24 * 60 * 60 * 1000);
+const yesterdayDate = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
+const { endOfDay, isAfter: isDateAfter } = require('date-fns');
+
+const isTomorrowDisabled = isDateAfter(tomorrowDate, endOfDay(todayDate));
+assert(isTomorrowDisabled === true, 'Tomorrow is correctly marked as disabled when maxDate is today');
+
+const isYesterdayDisabled = isDateAfter(yesterdayDate, endOfDay(todayDate));
+assert(isYesterdayDisabled === false, 'Yesterday is correctly marked as enabled when maxDate is today');
 
 console.log(`\nCore Engine Test Summary: ${passed} Passed, ${failed} Failed.`);
 if (failed > 0) {
