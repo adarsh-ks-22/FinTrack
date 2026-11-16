@@ -23,7 +23,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { z } from 'zod';
 import { formatInTimeZone } from 'date-fns-tz';
-import { isValid, parse } from 'date-fns';
+import { isValid, parse, format } from 'date-fns';
 
 import { database } from '@/db/database';
 import { Transaction } from '@/db/models/Transaction';
@@ -32,6 +32,7 @@ import { ALL_CATEGORIES, CATEGORY_META, IST_TIMEZONE } from '@/constants/categor
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useTransactionStore } from '@/stores/useTransactionStore';
 import { useBudgetStore } from '@/stores/useBudgetStore';
+import { CalendarPickerModal } from '@/components/ui/CalendarPickerModal';
 
 // --------------- Zod validation schema ---------------
 
@@ -110,6 +111,26 @@ export default function AddTransactionModal() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingEdit, setIsLoadingEdit] = useState(isEdit);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+
+  function handleSelectCalendarDate(selectedDate: Date) {
+    let timePart = '';
+    if (dateTimeStr) {
+      const parts = dateTimeStr.trim().split(/\s+/);
+      if (parts.length >= 2 && /^(\d{2}):(\d{2})$/.test(parts[1])) {
+        timePart = parts[1];
+      }
+    }
+    if (!timePart) {
+      timePart = formatInTimeZone(new Date(), IST_TIMEZONE, 'HH:mm');
+    }
+    const datePart = format(selectedDate, 'dd/MM/yyyy');
+    setDateTimeStr(`${datePart} ${timePart}`);
+    if (errors.dateTimeStr) {
+      setErrors((e) => ({ ...e, dateTimeStr: undefined }));
+    }
+    setShowCalendarModal(false);
+  }
 
   // Slide-up bottom-sheet animation
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -462,15 +483,35 @@ export default function AddTransactionModal() {
 
             {/* ── Date & Time Input ── */}
             <View className="mb-5">
-              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                Date &amp; Time (IST)
-              </Text>
+              <View className="mb-1.5 flex-row items-center justify-between">
+                <Text className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                  Date &amp; Time (IST)
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowCalendarModal(true)}
+                  className="flex-row items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 dark:bg-indigo-950/60"
+                  activeOpacity={0.7}
+                  accessibilityLabel="Open calendar to pick date"
+                >
+                  <Ionicons name="calendar" size={13} color="#6366f1" />
+                  <Text className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                    Pick Date
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <View
                 className={`flex-row items-center rounded-xl bg-white px-4 shadow-sm dark:bg-gray-800 ${
                   errors.dateTimeStr ? 'border border-red-500' : 'border border-gray-200 dark:border-gray-700'
                 }`}
               >
-                <Ionicons name="calendar-outline" size={18} color="#9ca3af" />
+                <TouchableOpacity
+                  onPress={() => setShowCalendarModal(true)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  className="p-1 mr-1"
+                  accessibilityLabel="Open calendar date picker"
+                >
+                  <Ionicons name="calendar-outline" size={20} color="#6366f1" />
+                </TouchableOpacity>
                 <TextInput
                   value={dateTimeStr}
                   onChangeText={(v) => {
@@ -478,7 +519,7 @@ export default function AddTransactionModal() {
                     if (errors.dateTimeStr) setErrors((e) => ({ ...e, dateTimeStr: undefined }));
                   }}
                   placeholder="DD/MM/YYYY HH:mm"
-                  className="ml-2 flex-1 py-3.5 text-sm text-gray-800 dark:text-gray-100"
+                  className="flex-1 py-3.5 text-sm text-gray-800 dark:text-gray-100"
                   placeholderTextColor="#9ca3af"
                   keyboardType="numbers-and-punctuation"
                   maxLength={16}
@@ -488,7 +529,9 @@ export default function AddTransactionModal() {
               {errors.dateTimeStr ? (
                 <Text className="mt-1 text-xs text-red-500">{errors.dateTimeStr}</Text>
               ) : (
-                <Text className="mt-1 text-xs text-gray-400 dark:text-gray-500">Format: DD/MM/YYYY HH:mm (24-hour)</Text>
+                <Text className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                  Format: DD/MM/YYYY HH:mm • Tap calendar icon to pick date
+                </Text>
               )}
             </View>
 
@@ -518,6 +561,21 @@ export default function AddTransactionModal() {
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingView>
+
+      <CalendarPickerModal
+        visible={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        onSelectDate={handleSelectCalendarDate}
+        title="Select Transaction Date"
+        initialDate={(() => {
+          if (dateTimeStr) {
+            const dateOnly = dateTimeStr.trim().split(/\s+/)[0];
+            const parsed = parse(dateOnly, 'dd/MM/yyyy', new Date());
+            if (isValid(parsed)) return parsed;
+          }
+          return new Date();
+        })()}
+      />
     </SafeAreaView>
   );
 }

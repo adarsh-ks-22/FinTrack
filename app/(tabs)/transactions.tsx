@@ -10,6 +10,7 @@ import {
   Text,
   FlatList,
   Pressable,
+  TouchableOpacity,
   TextInput,
   ScrollView,
   RefreshControl,
@@ -27,12 +28,14 @@ import {
   endOfMonth,
   parse,
   isValid,
+  format,
 } from 'date-fns';
 
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { FAB } from '@/components/layout/FAB';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TransactionCard } from '@/components/transactions/TransactionCard';
+import { CalendarPickerModal } from '@/components/ui/CalendarPickerModal';
 import { useTransactionStore } from '@/stores/useTransactionStore';
 import { syncSmsInbox } from '@/services/smsService';
 import { TransactionRecord } from '@/types';
@@ -87,6 +90,7 @@ export default function TransactionsScreen() {
   const [customApplied, setCustomApplied] = useState(false);
   const [customError, setCustomError] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [calendarTarget, setCalendarTarget] = useState<'from' | 'to' | null>(null);
 
   // ── Sync SMS from Inbox Handler ──
   const handleSyncSms = useCallback(async () => {
@@ -156,6 +160,23 @@ export default function TransactionsScreen() {
     setCustomApplied(false);
     setCustomError('');
   }, []);
+
+  const handleSelectCalendarDate = useCallback(
+    (date: Date) => {
+      const formatted = format(date, 'dd/MM/yyyy');
+      if (calendarTarget === 'from') {
+        setCustomFrom(formatted);
+        setCustomApplied(false);
+        setCustomError('');
+      } else if (calendarTarget === 'to') {
+        setCustomTo(formatted);
+        setCustomApplied(false);
+        setCustomError('');
+      }
+      setCalendarTarget(null);
+    },
+    [calendarTarget]
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: TransactionRecord }) => <TransactionCard item={item} deletable />,
@@ -242,36 +263,58 @@ export default function TransactionsScreen() {
             <View className="flex-row items-center gap-2">
               <View className="flex-1">
                 <Text className="mb-0.5 text-xs text-gray-500 dark:text-gray-400">From</Text>
-                <TextInput
-                  value={customFrom}
-                  onChangeText={(v) => {
-                    setCustomFrom(v);
-                    setCustomApplied(false);
-                    setCustomError('');
-                  }}
-                  placeholder="DD/MM/YYYY"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numbers-and-punctuation"
-                  maxLength={10}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                />
+                <View className="flex-row items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 dark:border-gray-700 dark:bg-gray-800">
+                  <TextInput
+                    value={customFrom}
+                    onChangeText={(v) => {
+                      setCustomFrom(v);
+                      setCustomApplied(false);
+                      setCustomError('');
+                    }}
+                    placeholder="DD/MM/YYYY"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={10}
+                    className="flex-1 py-2 text-sm text-gray-800 dark:text-gray-100"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setCalendarTarget('from')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    className="p-1"
+                    accessibilityLabel="Select from date"
+                  >
+                    <Ionicons name="calendar-outline" size={17} color="#6366f1" />
+                  </TouchableOpacity>
+                </View>
               </View>
+
               <View className="flex-1">
                 <Text className="mb-0.5 text-xs text-gray-500 dark:text-gray-400">To</Text>
-                <TextInput
-                  value={customTo}
-                  onChangeText={(v) => {
-                    setCustomTo(v);
-                    setCustomApplied(false);
-                    setCustomError('');
-                  }}
-                  placeholder="DD/MM/YYYY"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numbers-and-punctuation"
-                  maxLength={10}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                />
+                <View className="flex-row items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 dark:border-gray-700 dark:bg-gray-800">
+                  <TextInput
+                    value={customTo}
+                    onChangeText={(v) => {
+                      setCustomTo(v);
+                      setCustomApplied(false);
+                      setCustomError('');
+                    }}
+                    placeholder="DD/MM/YYYY"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={10}
+                    className="flex-1 py-2 text-sm text-gray-800 dark:text-gray-100"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setCalendarTarget('to')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    className="p-1"
+                    accessibilityLabel="Select to date"
+                  >
+                    <Ionicons name="calendar-outline" size={17} color="#6366f1" />
+                  </TouchableOpacity>
+                </View>
               </View>
+
               <Pressable
                 onPress={handleApplyCustom}
                 className="mt-4 rounded-lg bg-indigo-600 px-3 py-2 active:bg-indigo-700"
@@ -328,6 +371,23 @@ export default function TransactionsScreen() {
         icon="add"
         onPress={() => router.push('/modals/add-transaction')}
         accessibilityLabel="Add new transaction"
+      />
+
+      <CalendarPickerModal
+        visible={calendarTarget !== null}
+        onClose={() => setCalendarTarget(null)}
+        onSelectDate={handleSelectCalendarDate}
+        title={calendarTarget === 'from' ? "Select 'From' Date" : "Select 'To' Date"}
+        initialDate={
+          calendarTarget === 'from'
+            ? parseCustomDate(customFrom) || new Date()
+            : parseCustomDate(customTo) || new Date()
+        }
+        minDate={
+          calendarTarget === 'to' && customFrom
+            ? parseCustomDate(customFrom) || undefined
+            : undefined
+        }
       />
     </SafeAreaView>
   );

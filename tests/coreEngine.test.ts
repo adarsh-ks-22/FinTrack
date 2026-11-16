@@ -202,6 +202,34 @@ const goalMetDerived = computeDerivedBudget(testBudget, txGoalMet);
 assert(goalMetDerived.savedSoFar >= goalMetDerived.savingsTarget, 'Savings target met when savedSoFar equals savingsTarget');
 assert(!goalMetDerived.budgetExceeded, 'Meeting savings target does not mark budget as exceeded');
 
+// --- Calendar Date Picker Engine Tests ---
+console.log('\n--- Running Calendar Date Picker Tests ---');
+const {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  format,
+  parse,
+  isValid,
+} = require('date-fns');
+
+// Verify calendar grid produces full 7-day weeks (multiples of 7)
+const nov2026 = new Date(2026, 10, 1); // Nov 2026
+const gridStart = startOfWeek(startOfMonth(nov2026), { weekStartsOn: 0 });
+const gridEnd = endOfWeek(endOfMonth(nov2026), { weekStartsOn: 0 });
+const novGridDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
+assert(novGridDays.length % 7 === 0, 'Calendar grid generates complete 7-day weeks', `Got: ${novGridDays.length}`);
+assert(novGridDays.length >= 28 && novGridDays.length <= 42, 'Calendar grid length is within valid monthly bounds (28..42)');
+
+// Verify DD/MM/YYYY formatting and round-trip parsing
+const testDate = new Date(2026, 10, 16);
+const formattedStr = format(testDate, 'dd/MM/yyyy');
+assert(formattedStr === '16/11/2026', 'Formats date to DD/MM/YYYY', `Got: ${formattedStr}`);
+const roundTrip = parse(formattedStr, 'dd/MM/yyyy', new Date());
+assert(isValid(roundTrip) && roundTrip.getDate() === 16 && roundTrip.getMonth() === 10 && roundTrip.getFullYear() === 2026, 'Parses DD/MM/YYYY accurately round-trip');
+
 console.log(`\nCore Engine Test Summary: ${passed} Passed, ${failed} Failed.`);
 if (failed > 0) {
   process.exit(1);
