@@ -115,6 +115,10 @@ export default function AddTransactionModal() {
   const [showCalendarModal, setShowCalendarModal] = useState(false);
 
   function handleSelectCalendarDate(selectedDate: Date) {
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
+      setShowCalendarModal(false);
+      return;
+    }
     let timePart = '';
     if (dateTimeStr) {
       const parts = dateTimeStr.trim().split(/\s+/);
@@ -123,10 +127,18 @@ export default function AddTransactionModal() {
       }
     }
     if (!timePart) {
-      timePart = formatInTimeZone(new Date(), IST_TIMEZONE, 'HH:mm');
+      try {
+        timePart = formatInTimeZone(new Date(), IST_TIMEZONE, 'HH:mm');
+      } catch {
+        timePart = '12:00';
+      }
     }
-    const datePart = format(selectedDate, 'dd/MM/yyyy');
-    setDateTimeStr(`${datePart} ${timePart}`);
+    try {
+      const datePart = format(selectedDate, 'dd/MM/yyyy');
+      setDateTimeStr(`${datePart} ${timePart}`);
+    } catch (err) {
+      console.warn('[AddTransaction] Failed to format selected date:', err);
+    }
     if (errors.dateTimeStr) {
       setErrors((e) => ({ ...e, dateTimeStr: undefined }));
     }
@@ -188,8 +200,25 @@ export default function AddTransactionModal() {
 
       setExpenseType(record.expenseType);
       setComments(record.comments ?? '');
-      const ist = formatInTimeZone(new Date(record.timestamp), IST_TIMEZONE, 'dd/MM/yyyy HH:mm');
-      setDateTimeStr(ist);
+      
+      const rawTimestamp = Number(record.timestamp);
+      let validDate: Date;
+      if (!isNaN(rawTimestamp) && rawTimestamp > 0) {
+        const ms = rawTimestamp < 1e11 ? rawTimestamp * 1000 : rawTimestamp;
+        validDate = new Date(ms);
+      } else {
+        validDate = new Date();
+      }
+      if (isNaN(validDate.getTime())) {
+        validDate = new Date();
+      }
+      try {
+        const ist = formatInTimeZone(validDate, IST_TIMEZONE, 'dd/MM/yyyy HH:mm');
+        setDateTimeStr(ist);
+      } catch {
+        const now = new Date();
+        setDateTimeStr(formatInTimeZone(now, IST_TIMEZONE, 'dd/MM/yyyy HH:mm'));
+      }
     } catch (e) {
       console.error('[AddTransaction] Failed to load transaction for edit:', e);
     } finally {
@@ -235,8 +264,13 @@ export default function AddTransactionModal() {
       if (!isNaN(ts)) return ts;
     }
     // Fallback
-    const parsed = parse(str, 'dd/MM/yyyy HH:mm', new Date());
-    return parsed.getTime() - 5.5 * 60 * 60 * 1000;
+    try {
+      const parsed = parse(str, 'dd/MM/yyyy HH:mm', new Date());
+      if (isValid(parsed) && !isNaN(parsed.getTime())) {
+        return parsed.getTime() - 5.5 * 60 * 60 * 1000;
+      }
+    } catch {}
+    return Date.now();
   }
 
   async function handleSave() {
@@ -582,8 +616,10 @@ export default function AddTransactionModal() {
         initialDate={(() => {
           if (dateTimeStr) {
             const dateOnly = dateTimeStr.trim().split(/\s+/)[0];
-            const parsed = parse(dateOnly, 'dd/MM/yyyy', new Date());
-            if (isValid(parsed)) return parsed;
+            try {
+              const parsed = parse(dateOnly, 'dd/MM/yyyy', new Date());
+              if (isValid(parsed) && !isNaN(parsed.getTime())) return parsed;
+            } catch {}
           }
           return new Date();
         })()}

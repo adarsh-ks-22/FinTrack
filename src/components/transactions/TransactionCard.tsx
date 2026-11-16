@@ -50,11 +50,15 @@ export function TransactionCard({ item, deletable = true }: TransactionCardProps
   const isDeleting = useRef(false);
 
   // ── Format timestamp in IST ──
-  const formattedDate = formatInTimeZone(
-    new Date(item.timestamp),
-    IST_TIMEZONE,
-    'dd MMM, hh:mm a'
-  );
+  const formattedDate = (() => {
+    try {
+      const raw = Number(item.timestamp);
+      const ms = !isNaN(raw) && raw > 0 ? (raw < 1e11 ? raw * 1000 : raw) : Date.now();
+      return formatInTimeZone(new Date(ms), IST_TIMEZONE, 'dd MMM, hh:mm a');
+    } catch {
+      return '';
+    }
+  })();
 
   // ── Source icon ──
   const sourceIcon = item.source === Source.Manual ? '✏️' : '📩';

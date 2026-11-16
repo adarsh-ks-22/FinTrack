@@ -87,3 +87,50 @@ if (fs.existsSync(appGradlePath)) {
     }
   }
 }
+
+// 4. Patch expo-application to prevent "Cannot find native module 'ExpoApplication'" crash in Expo Go
+const expoAppPath = path.join(__dirname, '..', 'node_modules', 'expo-application', 'build', 'ExpoApplication.js');
+if (fs.existsSync(expoAppPath)) {
+  let content = fs.readFileSync(expoAppPath, 'utf8');
+  if (!content.includes('/* FinTrack Patch */')) {
+    const safeExport = `/* FinTrack Patch */
+import { requireOptionalNativeModule } from 'expo';
+const nativeModule = typeof requireOptionalNativeModule === 'function'
+  ? requireOptionalNativeModule('ExpoApplication')
+  : null;
+export default nativeModule ?? {};
+`;
+    fs.writeFileSync(expoAppPath, safeExport, 'utf8');
+    console.log('[FinTrack] Successfully patched expo-application ExpoApplication.js to safely handle missing native module');
+  } else {
+    console.log('[FinTrack] expo-application ExpoApplication.js already patched.');
+  }
+}
+
+// 5. Patch requireNativeModule in expo-modules-core to gracefully fallback for ExpoApplication
+const requireModulePaths = [
+  path.join(__dirname, '..', 'node_modules', 'expo', 'node_modules', 'expo-modules-core', 'build', 'requireNativeModule.js'),
+  path.join(__dirname, '..', 'node_modules', 'expo-modules-core', 'build', 'requireNativeModule.js'),
+];
+
+for (const reqPath of requireModulePaths) {
+  if (fs.existsSync(reqPath)) {
+    let content = fs.readFileSync(reqPath, 'utf8');
+    if (!content.includes('/* FinTrack ExpoApplication Fallback */')) {
+      const targetPattern = 'if (!nativeModule) {';
+      const replacement = `if (!nativeModule) {
+        /* FinTrack ExpoApplication Fallback */
+        if (moduleName === 'ExpoApplication') {
+            return {};
+        }`;
+      if (content.includes(targetPattern)) {
+        content = content.replace(targetPattern, replacement);
+        fs.writeFileSync(reqPath, content, 'utf8');
+        console.log('[FinTrack] Successfully patched ' + reqPath + ' with ExpoApplication fallback');
+      }
+    } else {
+      console.log('[FinTrack] ' + reqPath + ' already patched.');
+    }
+  }
+}
+

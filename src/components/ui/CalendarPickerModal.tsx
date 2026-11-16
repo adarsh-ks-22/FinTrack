@@ -4,6 +4,7 @@
 // Built with pure React Native and date-fns (no native dependencies).
 // Supports month/year navigation, quick 'Today' jump, custom title,
 // min/max dates, and seamless dark mode support.
+// Fully guarded against invalid date values.
 // ============================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -32,6 +33,7 @@ import {
   endOfDay,
   isBefore,
   isAfter,
+  isValid,
 } from 'date-fns';
 
 export interface CalendarPickerModalProps {
@@ -46,6 +48,16 @@ export interface CalendarPickerModalProps {
 
 const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
+/**
+ * Returns a guaranteed valid Date object.
+ */
+function getSafeDate(date?: Date | null): Date {
+  if (date instanceof Date && !isNaN(date.getTime()) && isValid(date)) {
+    return date;
+  }
+  return new Date();
+}
+
 export function CalendarPickerModal({
   visible,
   onClose,
@@ -55,36 +67,44 @@ export function CalendarPickerModal({
   minDate,
   maxDate,
 }: CalendarPickerModalProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(() => initialDate || new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => getSafeDate(initialDate));
   const [viewMonth, setViewMonth] = useState<Date>(() =>
-    startOfMonth(initialDate || new Date())
+    startOfMonth(getSafeDate(initialDate))
   );
 
   // Sync state whenever modal opens or initialDate changes
+  const initialTime =
+    initialDate && !isNaN(initialDate.getTime()) ? initialDate.getTime() : null;
+
   useEffect(() => {
     if (visible) {
-      const target = initialDate && !isNaN(initialDate.getTime()) ? initialDate : new Date();
+      const target = getSafeDate(initialDate);
       setSelectedDate(target);
       setViewMonth(startOfMonth(target));
     }
-  }, [visible, initialDate]);
+  }, [visible, initialTime]);
 
   // Days in calendar view (full weeks)
   const days = useMemo(() => {
-    const monthStart = startOfMonth(viewMonth);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
+    try {
+      const safeMonth = getSafeDate(viewMonth);
+      const monthStart = startOfMonth(safeMonth);
+      const monthEnd = endOfMonth(monthStart);
+      const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
+      const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
-    return eachDayOfInterval({ start: startDate, end: endDate });
+      return eachDayOfInterval({ start: startDate, end: endDate });
+    } catch {
+      return [];
+    }
   }, [viewMonth]);
 
   const handlePrevMonth = () => {
-    setViewMonth((prev) => subMonths(prev, 1));
+    setViewMonth((prev) => subMonths(getSafeDate(prev), 1));
   };
 
   const handleNextMonth = () => {
-    setViewMonth((prev) => addMonths(prev, 1));
+    setViewMonth((prev) => addMonths(getSafeDate(prev), 1));
   };
 
   const handleJumpToToday = () => {
@@ -94,17 +114,26 @@ export function CalendarPickerModal({
   };
 
   const handleDayPress = (day: Date, isDisabled: boolean) => {
-    if (isDisabled) return;
+    if (!day || isNaN(day.getTime()) || isDisabled) return;
     setSelectedDate(day);
-    if (!isSameMonth(day, viewMonth)) {
+    if (!isSameMonth(day, getSafeDate(viewMonth))) {
       setViewMonth(startOfMonth(day));
     }
   };
 
   const handleConfirm = () => {
-    onSelectDate(selectedDate);
+    const target = getSafeDate(selectedDate);
+    onSelectDate(target);
     onClose();
   };
+
+  const formattedSelected = isValid(selectedDate)
+    ? format(selectedDate, 'EEE, dd MMM yyyy')
+    : format(new Date(), 'EEE, dd MMM yyyy');
+
+  const formattedMonth = isValid(viewMonth)
+    ? format(viewMonth, 'MMMM yyyy')
+    : format(new Date(), 'MMMM yyyy');
 
   return (
     <Modal
@@ -128,7 +157,7 @@ export function CalendarPickerModal({
                       {title}
                     </Text>
                     <Text className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
-                      {format(selectedDate, 'EEE, dd MMM yyyy')}
+                      {formattedSelected}
                     </Text>
                   </View>
                 </View>
@@ -153,7 +182,7 @@ export function CalendarPickerModal({
 
                 <View className="flex-row items-center gap-2">
                   <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">
-                    {format(viewMonth, 'MMMM yyyy')}
+                    {formattedMonth}
                   </Text>
                   <TouchableOpacity
                     onPress={handleJumpToToday}
@@ -194,7 +223,7 @@ export function CalendarPickerModal({
               {/* Days Grid */}
               <View className="flex-row flex-wrap">
                 {days.map((day) => {
-                  const inCurrentMonth = isSameMonth(day, viewMonth);
+                  const inCurrentMonth = isSameMonth(day, getSafeDate(viewMonth));
                   const isDaySelected = isSameDay(day, selectedDate);
                   const isCurrentDay = isToday(day);
 
@@ -202,8 +231,10 @@ export function CalendarPickerModal({
                   const isAfterMax = maxDate ? isAfter(day, endOfDay(maxDate)) : false;
                   const isDisabled = isBeforeMin || isAfterMax;
 
+                  const dayKey = `${day.getFullYear()}-${day.getMonth() + 1}-${day.getDate()}`;
+
                   return (
-                    <View key={day.toISOString()} className="w-[14.28%] p-0.5">
+                    <View key={dayKey} className="w-[14.28%] p-0.5">
                       <Pressable
                         onPress={() => handleDayPress(day, isDisabled)}
                         disabled={isDisabled}

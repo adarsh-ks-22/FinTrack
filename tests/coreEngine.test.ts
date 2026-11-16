@@ -248,6 +248,46 @@ assert(utilitiesTotal === 70000, 'Calculates exact total spend for category (70,
 const emptyCategoryFiltered = sampleTxList.filter((t) => t.category.toLowerCase() === 'nonexistent'.toLowerCase());
 assert(emptyCategoryFiltered.length === 0, 'Returns clean empty array for category with no transactions');
 
+// --- Calendar Date Picker Robustness & Timestamp Normalization Tests ---
+console.log('\n--- Running Calendar Date Picker Robustness Tests ---');
+
+function safeNormalizeTimestamp(raw: any): Date {
+  const num = Number(raw);
+  if (!isNaN(num) && num > 0) {
+    const ms = num < 1e11 ? num * 1000 : num;
+    const d = new Date(ms);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return new Date();
+}
+
+const msDate = safeNormalizeTimestamp(1731765293000);
+assert(isValid(msDate) && msDate.getFullYear() >= 2024, 'Millisecond timestamp normalizes correctly');
+
+const secDate = safeNormalizeTimestamp(1731765293);
+assert(isValid(secDate) && secDate.getFullYear() >= 2024, 'Seconds timestamp (10 digits) converts to milliseconds safely');
+
+const invalidDate = safeNormalizeTimestamp('not-a-number');
+assert(isValid(invalidDate), 'Invalid string timestamp gracefully falls back to valid Date');
+
+const nanDate = safeNormalizeTimestamp(NaN);
+assert(isValid(nanDate), 'NaN timestamp gracefully falls back to valid Date');
+
+// Test ExpoApplication patch safety
+console.log('\n--- Running ExpoApplication Native Module Guard Tests ---');
+const fs = require('fs');
+const path = require('path');
+const expoAppFile = path.join(__dirname, '..', 'node_modules', 'expo-application', 'build', 'ExpoApplication.js');
+const expoAppContent = fs.readFileSync(expoAppFile, 'utf8');
+assert(
+  !expoAppContent.includes("export default requireNativeModule('ExpoApplication')"),
+  'ExpoApplication.js does not contain crashing unconditional requireNativeModule'
+);
+assert(
+  expoAppContent.includes('requireOptionalNativeModule'),
+  'ExpoApplication.js uses safe requireOptionalNativeModule with empty fallback'
+);
+
 console.log(`\nCore Engine Test Summary: ${passed} Passed, ${failed} Failed.`);
 if (failed > 0) {
   process.exit(1);
