@@ -30,6 +30,7 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { CurrencyText } from '@/components/ui/CurrencyText';
 import { Badge } from '@/components/ui/Badge';
 import { ToastNotification, showToast } from '@/components/ui/ToastNotification';
+import { SplitAllocationAccordion } from '@/components/budget/SplitAllocationAccordion';
 import { useBudgetStore } from '@/stores/useBudgetStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useRecurringStore } from '@/stores/useRecurringStore';
@@ -356,263 +357,24 @@ export default function BudgetScreen() {
           </View>
         </View>
 
-        {/* ── 2. The Split (50/30/20 Presets & Steppers) ── */}
-        <View className="mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-          <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-              The Split Allocation
-            </Text>
-            {/* Validation Badge */}
-            <View
-              className={`flex-row items-center rounded-full px-2.5 py-1 ${
-                isSplitValid ? 'bg-emerald-50 dark:bg-emerald-950/50' : 'bg-amber-50 dark:bg-amber-950/50'
-              }`}
-            >
-              <Ionicons
-                name={isSplitValid ? 'checkmark-circle' : 'alert-circle'}
-                size={14}
-                color={isSplitValid ? '#10b981' : '#f59e0b'}
-              />
-              <Text
-                className={`ml-1 text-xs font-bold ${
-                  isSplitValid ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'
-                }`}
-              >
-                Sum: {splitSum}% {isSplitValid ? '✓' : '(Must be 100%)'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Quick Presets Chips */}
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            {PRESETS.map((p) => {
-              const isSelected = activePreset === p.id;
-              return (
-                <Pressable
-                  key={p.id}
-                  onPress={() => handleSelectPreset(p.id)}
-                  className={`rounded-xl px-3.5 py-2 border ${
-                    isSelected
-                      ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-950/60 dark:border-indigo-400'
-                      : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-bold ${
-                      isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    {p.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Split Steppers: Needs, Wants, Savings */}
-          <View className="space-y-4">
-            {/* Needs Stepper */}
-            <View className="rounded-2xl bg-blue-50/50 border border-blue-100 p-3.5 dark:bg-blue-950/30 dark:border-blue-900/40">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <View className="mr-2 h-7 w-7 items-center justify-center rounded-lg bg-blue-500">
-                    <Text className="text-xs font-bold text-white">🏠</Text>
-                  </View>
-                  <View>
-                    <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">Needs</Text>
-                    <Text className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Rent, Groceries, Utilities, Healthcare
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-base font-extrabold text-blue-600 dark:text-blue-400">
-                  {needsPct}%
-                </Text>
-              </View>
-
-              {/* Progress bar visual */}
-              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-blue-100 dark:bg-blue-950">
-                <View
-                  style={{ width: `${Math.min(100, needsPct)}%` }}
-                  className="h-full bg-blue-500 rounded-full"
-                />
-              </View>
-
-              {/* Stepper Controls */}
-              <View className="flex-row items-center justify-between mt-1">
-                <CurrencyText
-                  amount={calculatedNeedsLimit}
-                  currencySymbol={currencySymbol}
-                  className="text-xs font-semibold text-blue-700 dark:text-blue-300"
-                  prefix="Target: "
-                />
-                <View className="flex-row items-center gap-1.5">
-                  <Pressable
-                    onPress={() => adjustSplit('needs', -5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-5</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('needs', -1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-1</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('needs', 1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+1</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('needs', 5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+5</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
-
-            {/* Wants Stepper */}
-            <View className="rounded-2xl bg-orange-50/50 border border-orange-100 p-3.5 dark:bg-orange-950/30 dark:border-orange-900/40">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <View className="mr-2 h-7 w-7 items-center justify-center rounded-lg bg-orange-500">
-                    <Text className="text-xs font-bold text-white">🎉</Text>
-                  </View>
-                  <View>
-                    <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">Wants</Text>
-                    <Text className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Dining, Entertainment, Shopping, Travel
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-base font-extrabold text-orange-600 dark:text-orange-400">
-                  {wantsPct}%
-                </Text>
-              </View>
-
-              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-orange-100 dark:bg-orange-950">
-                <View
-                  style={{ width: `${Math.min(100, wantsPct)}%` }}
-                  className="h-full bg-orange-500 rounded-full"
-                />
-              </View>
-
-              <View className="flex-row items-center justify-between mt-1">
-                <CurrencyText
-                  amount={calculatedWantsLimit}
-                  currencySymbol={currencySymbol}
-                  className="text-xs font-semibold text-orange-700 dark:text-orange-300"
-                  prefix="Target: "
-                />
-                <View className="flex-row items-center gap-1.5">
-                  <Pressable
-                    onPress={() => adjustSplit('wants', -5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-5</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('wants', -1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-1</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('wants', 1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+1</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('wants', 5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+5</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
-
-            {/* Savings Stepper */}
-            <View className="rounded-2xl bg-emerald-50/50 border border-emerald-100 p-3.5 dark:bg-emerald-950/30 dark:border-emerald-900/40">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <View className="mr-2 h-7 w-7 items-center justify-center rounded-lg bg-emerald-500">
-                    <Text className="text-xs font-bold text-white">💰</Text>
-                  </View>
-                  <View>
-                    <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">Savings</Text>
-                    <Text className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Emergency Fund, Investments, Deposits
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
-                  {savingsPct}%
-                </Text>
-              </View>
-
-              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-950">
-                <View
-                  style={{ width: `${Math.min(100, savingsPct)}%` }}
-                  className="h-full bg-emerald-500 rounded-full"
-                />
-              </View>
-
-              <View className="flex-row items-center justify-between mt-1">
-                <CurrencyText
-                  amount={calculatedSavingsTarget}
-                  currencySymbol={currencySymbol}
-                  className="text-xs font-semibold text-emerald-700 dark:text-emerald-300"
-                  prefix="Target: "
-                />
-                <View className="flex-row items-center gap-1.5">
-                  <Pressable
-                    onPress={() => adjustSplit('savings', -5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-5</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('savings', -1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-1</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('savings', 1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+1</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => adjustSplit('savings', 5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+5</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Normalization Helper Button when sum != 100 */}
-          {!isSplitValid && (
-            <Pressable
-              onPress={handleNormalize}
-              className="mt-4 flex-row items-center justify-center rounded-xl bg-amber-500 py-2.5 px-4"
-            >
-              <Ionicons name="refresh" size={16} color="#ffffff" />
-              <Text className="ml-2 text-xs font-bold text-white">
-                Auto-Normalize to 100%
-              </Text>
-            </Pressable>
-          )}
-        </View>
+        {/* ── 2. The Split Allocation (Collapsible Accordion) ── */}
+        <SplitAllocationAccordion
+          isSplitValid={isSplitValid}
+          splitSum={splitSum}
+          activePreset={activePreset}
+          presets={PRESETS}
+          onSelectPreset={handleSelectPreset}
+          needsPct={needsPct}
+          wantsPct={wantsPct}
+          savingsPct={savingsPct}
+          calculatedNeedsLimit={calculatedNeedsLimit}
+          calculatedWantsLimit={calculatedWantsLimit}
+          calculatedSavingsTarget={calculatedSavingsTarget}
+          currencySymbol={currencySymbol}
+          onAdjustSplit={adjustSplit}
+          onNormalize={handleNormalize}
+          defaultExpanded={false}
+        />
 
         {/* ── 3. Summary Cards (Needs, Wants, Savings) ── */}
         <View className="mb-4">

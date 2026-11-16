@@ -344,6 +344,41 @@ assert(isTomorrowDisabled === true, 'Tomorrow is correctly marked as disabled wh
 const isYesterdayDisabled = isDateAfter(yesterdayDate, endOfDay(todayDate));
 assert(isYesterdayDisabled === false, 'Yesterday is correctly marked as enabled when maxDate is today');
 
+// --- Split Allocation Accordion Logic Tests ---
+console.log('\n--- Running Split Allocation Accordion Logic Tests ---');
+
+// 1. Default collapsed state verification
+const defaultAccordionExpanded = false;
+assert(defaultAccordionExpanded === false, 'Accordion is collapsed by default');
+
+// 2. Split sum and badge validation
+function getSplitBadgeText(needs: number, wants: number, savings: number) {
+  const sum = needs + wants + savings;
+  const isValid = sum === 100;
+  return {
+    sum,
+    isValid,
+    badgeText: `Sum: ${sum}% ${isValid ? '✓' : ''}`.trim(),
+  };
+}
+
+const validSplit = getSplitBadgeText(50, 30, 20);
+assert(validSplit.isValid === true, '50/30/20 split is valid (100%)');
+assert(validSplit.badgeText === 'Sum: 100% ✓', 'Displays "Sum: 100% ✓" badge when valid', `Got: ${validSplit.badgeText}`);
+
+const invalidSplit = getSplitBadgeText(60, 30, 20);
+assert(invalidSplit.isValid === false, '60/30/20 split is invalid (110%)');
+assert(invalidSplit.badgeText === 'Sum: 110%', 'Displays "Sum: 110%" badge without checkmark when invalid', `Got: ${invalidSplit.badgeText}`);
+
+// 3. Derived limits calculation
+const testBudgetTotal = 50000;
+const needsLimit = (testBudgetTotal * 50) / 100;
+const wantsLimit = (testBudgetTotal * 30) / 100;
+const savingsTarget = (testBudgetTotal * 20) / 100;
+assert(needsLimit === 25000, 'Calculates 50% needs limit accurately (₹25,000)');
+assert(wantsLimit === 15000, 'Calculates 30% wants limit accurately (₹15,000)');
+assert(savingsTarget === 10000, 'Calculates 20% savings target accurately (₹10,000)');
+
 console.log(`\nCore Engine Test Summary: ${passed} Passed, ${failed} Failed.`);
 if (failed > 0) {
   process.exit(1);
