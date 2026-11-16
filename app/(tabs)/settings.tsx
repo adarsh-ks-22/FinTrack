@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from 'nativewind';
 
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -172,6 +173,17 @@ function SettingsRow({
 // ============================================================
 
 export default function SettingsScreen() {
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+
+  const handleToggleTheme = (value: boolean) => {
+    setColorScheme(value ? 'dark' : 'light');
+    showToast({
+      message: value ? 'Dark mode activated' : 'Light mode activated',
+      variant: 'info',
+    });
+  };
+
   const {
     currencySymbol,
     currencyCode,
@@ -449,8 +461,32 @@ export default function SettingsScreen() {
       <ScreenHeader title="Settings & Tools" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* ── 1. Global Currency Section ── */}
+        {/* ── 1. Appearance / Theme Section ── */}
         <View className="mt-4">
+          <Text className="mb-1.5 px-4 text-xs font-bold uppercase tracking-wider text-gray-400">
+            Appearance
+          </Text>
+          <View className="mx-4 overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800 border border-gray-100 dark:border-gray-800">
+            <SettingsRow
+              icon={isDarkMode ? 'moon' : 'sunny-outline'}
+              iconColor={isDarkMode ? '#818cf8' : '#f59e0b'}
+              iconBgColor={isDarkMode ? 'bg-indigo-950/40' : 'bg-amber-50 dark:bg-amber-950/40'}
+              label="Dark Mode"
+              subtitle={isDarkMode ? 'Dark theme is active' : 'Light theme is active'}
+              rightElement={
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={handleToggleTheme}
+                  trackColor={{ false: '#d1d5db', true: '#818cf8' }}
+                  thumbColor={isDarkMode ? '#4f46e5' : '#f3f4f6'}
+                />
+              }
+            />
+          </View>
+        </View>
+
+        {/* ── 2. Global Currency Section ── */}
+        <View className="mt-6">
           <Text className="mb-1.5 px-4 text-xs font-bold uppercase tracking-wider text-gray-400">
             Global Currency
           </Text>
@@ -467,7 +503,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* ── 2. Monthly Ledger PDF Export Section ── */}
+        {/* ── 3. Monthly Ledger PDF Export Section ── */}
         <View className="mt-6">
           <Text className="mb-1.5 px-4 text-xs font-bold uppercase tracking-wider text-gray-400">
             Monthly Ledger PDF Export

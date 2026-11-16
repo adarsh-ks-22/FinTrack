@@ -19,9 +19,10 @@ interface ProgressRowProps {
   spent: number;
   limit: number;
   currencySymbol: string;
+  isSavings?: boolean;
 }
 
-function ProgressRow({ label, spent, limit, currencySymbol }: ProgressRowProps) {
+function ProgressRow({ label, spent, limit, currencySymbol, isSavings = false }: ProgressRowProps) {
   const pct = limit > 0 ? Math.min(1, spent / limit) : 0;
   const fillAnim = useRef(new Animated.Value(0)).current;
 
@@ -33,15 +34,26 @@ function ProgressRow({ label, spent, limit, currencySymbol }: ProgressRowProps) 
     }).start();
   }, [pct]);
 
+  const isOverBudget = !isSavings && limit > 0 && spent > limit;
+  const isGoalMet = isSavings && limit > 0 && spent >= limit;
+
   // Color thresholds
   let fillColor = '#22c55e'; // green-500
-  if (pct >= 1) fillColor = '#ef4444';       // red-500
-  else if (pct >= 0.7) fillColor = '#f59e0b'; // amber-500
+  if (isSavings) {
+    fillColor = isGoalMet ? '#10b981' : '#16a34a'; // emerald-500 / green-600
+  } else {
+    if (isOverBudget) fillColor = '#ef4444';       // red-500
+    else if (pct >= 0.7) fillColor = '#f59e0b'; // amber-500
+  }
 
   const widthInterpolation = fillAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
+
+  const amountTextColor = isSavings
+    ? (isGoalMet ? 'text-emerald-600' : 'text-gray-600')
+    : (isOverBudget ? 'text-red-500' : 'text-gray-600');
 
   return (
     <View className="mb-4">
@@ -52,7 +64,7 @@ function ProgressRow({ label, spent, limit, currencySymbol }: ProgressRowProps) 
           <CurrencyText
             amount={spent}
             currencySymbol={currencySymbol}
-            className={`text-xs font-semibold ${pct >= 1 ? 'text-red-500' : 'text-gray-600'}`}
+            className={`text-xs font-semibold ${amountTextColor}`}
           />
           <Text className="text-xs text-gray-400 mx-0.5"> / </Text>
           <CurrencyText
@@ -75,8 +87,8 @@ function ProgressRow({ label, spent, limit, currencySymbol }: ProgressRowProps) 
         />
       </View>
 
-      {/* Over-budget text */}
-      {pct >= 1 && (
+      {/* Over-budget text for expenses */}
+      {isOverBudget && (
         <Text className="mt-0.5 text-right text-xs font-medium text-red-500">
           Over budget by{' '}
           <CurrencyText
@@ -84,6 +96,13 @@ function ProgressRow({ label, spent, limit, currencySymbol }: ProgressRowProps) 
             currencySymbol={currencySymbol}
             className="text-xs font-medium text-red-500"
           />
+        </Text>
+      )}
+
+      {/* Goal met text for savings */}
+      {isGoalMet && (
+        <Text className="mt-0.5 text-right text-xs font-medium text-emerald-600">
+          Savings goal met 🎉
         </Text>
       )}
     </View>
@@ -140,6 +159,7 @@ export function BudgetProgressBar() {
         spent={savedSoFar}
         limit={savingsTarget}
         currencySymbol={currencySymbol}
+        isSavings
       />
     </View>
   );

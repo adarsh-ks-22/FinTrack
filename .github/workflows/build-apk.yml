@@ -9,13 +9,14 @@ on:
     branches:
       - main
       - 'feature/**'
+      - 'fix/**'
     paths-ignore:
       - 'README.md'
       - '.gitignore'
 
 jobs:
   build:
-    name: Build Android APK
+    name: Build Standalone Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -40,21 +41,27 @@ jobs:
       - name: 🏗️ Expo Prebuild (Generate Android native project)
         run: npx expo prebuild --platform android --clean
 
+      - name: ⚙️ Patch Android build features, WatermelonDB & Release Signing
+        run: |
+          echo "android.defaults.buildfeatures.buildconfig=true" >> android/gradle.properties
+          echo "expo.inlineModules.watchedDirectories=[]" >> android/gradle.properties
+          echo "android.enableProguardInReleaseBuilds=false" >> android/gradle.properties
+          node scripts/patch-watermelondb.js
+
       - name: ⚡ Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v4
 
       - name: 🔑 Grant execute permission to Gradle Wrapper
         run: chmod +x android/gradlew
 
-      - name: 🚀 Build APK with Gradle
+      - name: 🚀 Build Standalone Release APK with Gradle
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleRelease --no-daemon
 
-      - name: 📤 Upload APK Artifact
+      - name: 📤 Upload Standalone APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FinTrack-Android-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: FinTrack-Standalone-Release-APK
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 14
-

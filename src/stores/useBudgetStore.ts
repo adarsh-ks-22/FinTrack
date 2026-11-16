@@ -31,7 +31,7 @@ export interface DerivedBudgetValues {
   budgetExceeded: boolean;
 }
 
-function computeDerived(
+export function computeDerived(
   budget: BudgetRecord | null,
   transactions: TransactionRecord[]
 ): DerivedBudgetValues {
@@ -84,7 +84,7 @@ function computeDerived(
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalSpent = needsSpent + wantsSpent;
-  const savedSoFar = savingsSpent + Math.max(0, savingsTarget - Math.max(0, totalSpent - (needsLimit + wantsLimit)));
+  const savedSoFar = savingsSpent;
   const remainingBudget = Math.max(0, totalBudget - totalSpent);
 
   return {

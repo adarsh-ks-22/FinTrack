@@ -44,8 +44,8 @@ interface FilterChip {
 
 const FILTER_CHIPS: FilterChip[] = [
   { key: 'today', label: 'Today' },
-  { key: 'week', label: 'This Week' },
-  { key: 'month', label: 'This Month' },
+  { key: 'week', label: 'This\u00A0Week' },
+  { key: 'month', label: 'This\u00A0Month' },
   { key: 'custom', label: 'Custom' },
 ];
 
@@ -147,18 +147,18 @@ export default function TransactionsScreen() {
   const keyExtractor = useCallback((item: TransactionRecord) => item.id, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       <ScreenHeader
         title="Transactions"
         subtitle={`${sorted.length} record${sorted.length !== 1 ? 's' : ''}`}
       />
 
       {/* ── Filter chips ── */}
-      <View className="bg-white border-b border-gray-100 py-2">
+      <View className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 py-3">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: 'center' }}
         >
           {FILTER_CHIPS.map((chip) => {
             const isActive = activeFilter === chip.key;
@@ -166,14 +166,17 @@ export default function TransactionsScreen() {
               <Pressable
                 key={chip.key}
                 onPress={() => handleFilterChange(chip.key)}
-                className={`rounded-full px-4 py-1.5 ${
-                  isActive ? 'bg-indigo-600' : 'bg-gray-100'
+                className={`flex-row items-center justify-center rounded-full px-4 py-2 shrink-0 ${
+                  isActive ? 'bg-indigo-600' : 'bg-gray-100 dark:bg-gray-800'
                 }`}
+                style={{ flexShrink: 0 }}
               >
                 <Text
+                  numberOfLines={1}
                   className={`text-sm font-medium ${
-                    isActive ? 'text-white' : 'text-gray-600'
+                    isActive ? 'text-white' : 'text-gray-600 dark:text-gray-300'
                   }`}
+                  style={{ flexShrink: 0, includeFontPadding: false }}
                 >
                   {chip.label}
                 </Text>
