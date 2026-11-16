@@ -722,7 +722,7 @@ export default function BudgetScreen() {
                         params: { editId: item.id },
                       })
                     }
-                    className="rounded-2xl bg-gray-50/70 p-3.5 border border-gray-200 active:bg-gray-100 transition-all"
+                    className="rounded-2xl bg-gray-50/70 p-3.5 border border-gray-200 active:bg-gray-100"
                   >
                     {/* Top Row: Icon, Name, Category Badges & Amount */}
                     <View className="flex-row items-center justify-between">
@@ -930,7 +930,7 @@ function SummaryCard({
 
   return (
     <View
-      className={`rounded-2xl p-4 shadow-sm border ${cardBorder} ${cardBg} transition-all`}
+      className={`rounded-2xl p-4 shadow-sm border ${cardBorder} ${cardBg}`}
     >
       {/* Top Header: Title + Status Badge */}
       <View className="flex-row items-center justify-between">
