@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - 'feature/**'
+      - 'fix/**'
     paths-ignore:
       - 'README.md'
       - '.gitignore'
@@ -39,6 +40,11 @@ jobs:
 
       - name: 🏗️ Expo Prebuild (Generate Android native project)
         run: npx expo prebuild --platform android --clean
+
+      - name: ⚙️ Patch Android build features & WatermelonDB
+        run: |
+          echo "android.defaults.buildfeatures.buildconfig=true" >> android/gradle.properties
+          node scripts/patch-watermelondb.js
 
       - name: ⚡ Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v4

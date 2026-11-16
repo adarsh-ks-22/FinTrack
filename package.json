@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/smsParser.test.ts && tsx tests/coreEngine.test.ts"
+    "test": "tsx tests/smsParser.test.ts && tsx tests/coreEngine.test.ts",
+    "postinstall": "node scripts/patch-watermelondb.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
