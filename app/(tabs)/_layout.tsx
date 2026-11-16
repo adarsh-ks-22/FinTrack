@@ -75,7 +75,7 @@ export default function TabsLayout() {
               <Ionicons
                 name={focused ? tab.activeIcon : tab.inactiveIcon}
                 size={24}
-                color={color}
+                color={color as string}
               />
             ),
           }}
