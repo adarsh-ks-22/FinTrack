@@ -1,6 +1,6 @@
 {
   "name": "fintrack-sms",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Native Android SMS Inbox query and BroadcastReceiver for FinTrack",
   "main": "index.ts",
   "types": "index.ts"

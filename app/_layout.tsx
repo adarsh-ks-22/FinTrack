@@ -3,11 +3,15 @@
 // Root layout: DB initialization, Settings hydration, Expo Router Stack
 // ============================================================
 
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, Animated, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Prevent native splash screen from auto-hiding prematurely
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 import '../global.css';
 
@@ -77,6 +81,47 @@ function mapBudget(b: Budget): BudgetRecord {
 
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
+  const [showSplashOverlay, setShowSplashOverlay] = useState(true);
+  const splashFadeAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(0.35)).current;
+
+  // Pulse animation for the splash status indicator
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.35,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
+  // When DB is initialized, hide native splash and smoothly fade out in-app branded splash
+  useEffect(() => {
+    if (dbReady) {
+      SplashScreen.hideAsync().catch(() => {});
+      const timer = setTimeout(() => {
+        Animated.timing(splashFadeAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowSplashOverlay(false);
+        });
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [dbReady, splashFadeAnim]);
 
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
   const loadTransactions = useTransactionStore((s) => s.loadTransactions);
@@ -173,16 +218,6 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!dbReady) {
-    return (
-      <SafeAreaProvider>
-        <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-          <ActivityIndicator size="large" color="#3b82f6" />
-        </View>
-      </SafeAreaProvider>
-    );
-  }
-
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
@@ -206,6 +241,148 @@ export default function RootLayout() {
         />
       </Stack>
       <ToastNotification />
+
+      {/* ── Branded Smooth Splash Overlay (Concept 3 Aesthetic) ── */}
+      {showSplashOverlay && (
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              opacity: splashFadeAnim,
+              backgroundColor: '#080B14',
+              zIndex: 99999,
+            },
+          ]}
+          pointerEvents={dbReady ? 'none' : 'auto'}
+        >
+          <View className="flex-1 items-center justify-between px-6 py-20">
+            {/* Top Empty Spacer */}
+            <View className="h-4" />
+
+            {/* Centered Brand Emblem & Identity (Concept 3: Precision Bars & Coin) */}
+            <View className="items-center">
+              {/* Emblem Container Squircle */}
+              <View
+                style={{
+                  width: 104,
+                  height: 104,
+                  borderRadius: 30,
+                  backgroundColor: '#0e1424',
+                  borderColor: 'rgba(99, 102, 241, 0.4)',
+                  borderWidth: 1.5,
+                  shadowColor: '#6366f1',
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 24,
+                  elevation: 12,
+                }}
+                className="items-center justify-center mb-6"
+              >
+                {/* Minimalist Concept 3 Geometry */}
+                <View style={{ width: 60, height: 60, position: 'relative' }}>
+                  {/* Vertical Stem */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 6,
+                      top: 4,
+                      width: 10,
+                      height: 52,
+                      borderRadius: 5,
+                      backgroundColor: '#6366f1',
+                    }}
+                  />
+                  {/* Top Precision Bar */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 6,
+                      top: 4,
+                      width: 44,
+                      height: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#818cf8',
+                    }}
+                  />
+                  {/* Mid Precision Bar */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 6,
+                      top: 25,
+                      width: 28,
+                      height: 9,
+                      borderRadius: 4.5,
+                      backgroundColor: '#10b981',
+                    }}
+                  />
+                  {/* Glowing Emerald Coin Dot */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 42,
+                      top: 24,
+                      width: 11,
+                      height: 11,
+                      borderRadius: 5.5,
+                      backgroundColor: '#10b981',
+                      shadowColor: '#10b981',
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.9,
+                      shadowRadius: 8,
+                      elevation: 5,
+                    }}
+                  />
+                </View>
+              </View>
+
+              {/* Typography */}
+              <Text
+                style={{ letterSpacing: -0.5 }}
+                className="text-3xl font-extrabold text-white mb-2"
+              >
+                FinTrack
+              </Text>
+              <Text
+                style={{ letterSpacing: 2.2 }}
+                className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest"
+              >
+                OFFLINE-FIRST PERSONAL FINANCE
+              </Text>
+            </View>
+
+            {/* Bottom Status Indicator & Security Badge */}
+            <View className="items-center w-full">
+              <View
+                style={{
+                  backgroundColor: 'rgba(14, 20, 36, 0.9)',
+                  borderColor: 'rgba(51, 65, 85, 0.6)',
+                  borderWidth: 1,
+                }}
+                className="flex-row items-center rounded-full px-4 py-2 mb-4"
+              >
+                <Animated.View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: '#10b981',
+                    marginRight: 8,
+                    opacity: pulseAnim,
+                  }}
+                />
+                <Text className="text-xs font-medium text-slate-300">
+                  {dbReady ? 'Ready' : 'Syncing Local DB...'}
+                </Text>
+              </View>
+
+              <Text className="text-[11px] text-slate-500 font-medium">
+                100% On-Device Storage • Zero Cloud Leakage
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
+      )}
     </SafeAreaProvider>
   );
 }

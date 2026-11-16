@@ -734,7 +734,7 @@ export default function SettingsScreen() {
               iconColor="#6b7280"
               iconBgColor="bg-gray-100 dark:bg-gray-700"
               label="Version"
-              value="1.0.2"
+              value="1.0.4"
             />
             <SettingsRow
               icon="shield-outline"

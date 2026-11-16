@@ -721,7 +721,7 @@ export function generateLedgerHTMLTemplate(data: MonthlySummaryData): string {
       <div>Verified Ledger Expenditure Sum: <strong>${formatCurrency(totalSpent, currencySymbol)}</strong></div>
     </div>
     <div class="footer-right">
-      <div>FinTrack v1.0.2 • Offline-First Personal Finance Tracker</div>
+      <div>FinTrack v1.0.4 • Offline-First Personal Finance Tracker</div>
       <div style="font-size: 9px; color: #94a3b8; font-weight: normal; margin-top: 2px;">
         100% Device-Local Financial Privacy
       </div>

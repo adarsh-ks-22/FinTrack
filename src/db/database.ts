@@ -182,7 +182,7 @@ export async function exportDatabaseBackupJSON(): Promise<string> {
 
   const backupData = {
     appName: 'FinTrack',
-    version: '1.0.2',
+    version: '1.0.4',
     exportTimestampUTC: now.toISOString(),
     exportTimestampIST: formatInTimeZone(now, IST_TIMEZONE, 'dd MMM yyyy, hh:mm:ss a zzz'),
     offlineStatus: '100% On-Device Local SQLite Storage',

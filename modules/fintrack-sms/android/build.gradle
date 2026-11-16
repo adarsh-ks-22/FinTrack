@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 group = 'com.fintrack.sms'
-version = '1.0.2'
+version = '1.0.4'
 
 android {
     namespace "com.fintrack.sms"
