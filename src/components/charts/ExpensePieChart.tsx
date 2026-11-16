@@ -22,6 +22,7 @@ import { CATEGORY_META, getCategoryMeta } from '@/constants/categories';
 import { useTransactionStore } from '@/stores/useTransactionStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { CurrencyText } from '@/components/ui/CurrencyText';
+import { CategoryTransactionsModal } from '@/components/transactions/CategoryTransactionsModal';
 
 // --------------- Distinct Category Hex Colors ---------------
 
@@ -102,6 +103,7 @@ export function ExpensePieChart({
   const currencySymbol = propCurrencySymbol ?? storeCurrencySymbol;
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [drilldownCategory, setDrilldownCategory] = useState<string | null>(null);
 
   const handleSelectCategory = useCallback(
     (category: string | null) => {
@@ -302,6 +304,15 @@ export function ExpensePieChart({
                 >
                   {activeSlice.percentage.toFixed(1)}% of total
                 </Text>
+                <Pressable
+                  onPress={() => setDrilldownCategory(activeSlice.category)}
+                  className="mt-1.5 flex-row items-center rounded-full bg-indigo-50 px-2 py-0.5 dark:bg-indigo-950/60 active:opacity-75"
+                >
+                  <Text className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mr-0.5">
+                    View List
+                  </Text>
+                  <Ionicons name="chevron-forward" size={10} color="#6366f1" />
+                </Pressable>
               </View>
             ) : (
               // Default state inside hub
@@ -370,7 +381,10 @@ export function ExpensePieChart({
               return (
                 <Pressable
                   key={slice.category}
-                  onPress={() => handleSelectCategory(slice.category)}
+                  onPress={() => {
+                    handleSelectCategory(slice.category);
+                    setDrilldownCategory(slice.category);
+                  }}
                   style={({ pressed }) => [
                     isSelected
                       ? {
@@ -384,6 +398,7 @@ export function ExpensePieChart({
                     { opacity: pressed ? 0.8 : 1 },
                   ]}
                   className="flex-row items-center justify-between rounded-xl border p-2.5 transition-all"
+                  accessibilityLabel={`View transactions for ${slice.label}`}
                 >
                   {/* Left: Icon + Category Name */}
                   <View className="flex-row items-center flex-1 pr-2">
@@ -415,26 +430,33 @@ export function ExpensePieChart({
                     </View>
                   </View>
 
-                  {/* Right: Amount + Percentage Badge */}
-                  <View className="items-end">
-                    <CurrencyText
-                      amount={slice.amount}
-                      currencySymbol={currencySymbol}
-                      className={`text-sm font-bold ${
-                        isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-800 dark:text-gray-200'
-                      }`}
-                    />
-                    <View
-                      style={{ backgroundColor: `${slice.color}20` }}
-                      className="mt-0.5 rounded-full px-2 py-0.5"
-                    >
-                      <Text
-                        style={{ color: slice.color }}
-                        className="text-[11px] font-bold"
+                  {/* Right: Amount + Percentage Badge + Chevron */}
+                  <View className="flex-row items-center gap-2">
+                    <View className="items-end">
+                      <CurrencyText
+                        amount={slice.amount}
+                        currencySymbol={currencySymbol}
+                        className={`text-sm font-bold ${
+                          isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-800 dark:text-gray-200'
+                        }`}
+                      />
+                      <View
+                        style={{ backgroundColor: `${slice.color}20` }}
+                        className="mt-0.5 rounded-full px-2 py-0.5"
                       >
-                        {slice.percentage.toFixed(1)}%
-                      </Text>
+                        <Text
+                          style={{ color: slice.color }}
+                          className="text-[11px] font-bold"
+                        >
+                          {slice.percentage.toFixed(1)}%
+                        </Text>
+                      </View>
                     </View>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={isDark ? '#9ca3af' : '#6b7280'}
+                    />
                   </View>
                 </Pressable>
               );
@@ -442,6 +464,13 @@ export function ExpensePieChart({
           </View>
         </View>
       )}
+
+      {/* Category Transactions Drilldown Modal */}
+      <CategoryTransactionsModal
+        visible={drilldownCategory !== null}
+        category={drilldownCategory}
+        onClose={() => setDrilldownCategory(null)}
+      />
     </View>
   );
 }

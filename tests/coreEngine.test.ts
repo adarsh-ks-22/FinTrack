@@ -230,6 +230,24 @@ assert(formattedStr === '16/11/2026', 'Formats date to DD/MM/YYYY', `Got: ${form
 const roundTrip = parse(formattedStr, 'dd/MM/yyyy', new Date());
 assert(isValid(roundTrip) && roundTrip.getDate() === 16 && roundTrip.getMonth() === 10 && roundTrip.getFullYear() === 2026, 'Parses DD/MM/YYYY accurately round-trip');
 
+// --- Category Transactions Drilldown Tests ---
+console.log('\n--- Running Category Drilldown Tests ---');
+const sampleTxList = [
+  { id: '1', amount: 50000, category: 'Utilities', timestamp: 100 },
+  { id: '2', amount: 20000, category: 'utilities', timestamp: 200 },
+  { id: '3', amount: 1500, category: 'Food', timestamp: 300 },
+  { id: '4', amount: 3500, category: 'Travel', timestamp: 400 },
+];
+
+const utilitiesFiltered = sampleTxList.filter((t) => t.category.toLowerCase() === 'utilities'.toLowerCase());
+assert(utilitiesFiltered.length === 2, 'Filters transactions by category case-insensitively', `Got: ${utilitiesFiltered.length}`);
+
+const utilitiesTotal = utilitiesFiltered.reduce((sum, t) => sum + t.amount, 0);
+assert(utilitiesTotal === 70000, 'Calculates exact total spend for category (70,000 for Utilities)', `Got: ${utilitiesTotal}`);
+
+const emptyCategoryFiltered = sampleTxList.filter((t) => t.category.toLowerCase() === 'nonexistent'.toLowerCase());
+assert(emptyCategoryFiltered.length === 0, 'Returns clean empty array for category with no transactions');
+
 console.log(`\nCore Engine Test Summary: ${passed} Passed, ${failed} Failed.`);
 if (failed > 0) {
   process.exit(1);

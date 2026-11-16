@@ -90,9 +90,10 @@ const EXPENSE_TYPE_CONFIG: Record<
 // --------------- Main component ---------------
 
 export default function AddTransactionModal() {
-  const { editId, transactionId } = useLocalSearchParams<{
+  const { editId, transactionId, initialCategory } = useLocalSearchParams<{
     editId?: string;
     transactionId?: string;
+    initialCategory?: string;
   }>();
   const activeId = transactionId || editId;
   const isEdit = !!activeId;
@@ -152,6 +153,17 @@ export default function AddTransactionModal() {
     // If edit mode, load existing transaction
     if (isEdit && activeId) {
       loadExistingTransaction(activeId);
+    } else if (initialCategory) {
+      // Pre-select category passed from drilldown modal
+      const isKnown = Object.values(Category).includes(initialCategory as Category) && initialCategory !== Category.Other;
+      if (isKnown) {
+        const cat = initialCategory as Category;
+        setCategory(cat);
+        setExpenseType(CATEGORY_META[cat]?.defaultExpenseType ?? ExpenseType.Wants);
+      } else {
+        setCategory(Category.Other);
+        setCustomCategory(initialCategory);
+      }
     }
   }, []);
 
