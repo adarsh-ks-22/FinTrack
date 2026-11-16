@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
+// 1. Patch WatermelonDB Android build.gradle (enable BuildConfig generation for AGP 8+)
 const targetGradlePath = path.join(
   __dirname,
   '..',
@@ -31,4 +32,41 @@ if (fs.existsSync(targetGradlePath)) {
   }
 } else {
   console.log('[FinTrack] WatermelonDB path not found, skipping patch.');
+}
+
+// 2. Patch expo-modules-autolinking (handle non-JSON unquoted Kotlin string in mirrorKotlinInlineModulesCommand)
+const targetAutolinkingPath = path.join(
+  __dirname,
+  '..',
+  'node_modules',
+  'expo-modules-autolinking',
+  'build',
+  'commands',
+  'mirrorKotlinInlineModulesCommand.js'
+);
+
+if (fs.existsSync(targetAutolinkingPath)) {
+  let autolinkingContent = fs.readFileSync(targetAutolinkingPath, 'utf8');
+
+  if (autolinkingContent.includes('JSON.parse(watchedDirectoriesSerialized)') && !autolinkingContent.includes('/* FinTrack Patch */')) {
+    const safeParse = `/* FinTrack Patch */ (() => {
+            try {
+                return JSON.parse(watchedDirectoriesSerialized);
+            } catch (err) {
+                if (typeof watchedDirectoriesSerialized === 'string' && watchedDirectoriesSerialized.startsWith('[') && watchedDirectoriesSerialized.endsWith(']')) {
+                    const inner = watchedDirectoriesSerialized.slice(1, -1).trim();
+                    return inner ? inner.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean) : [];
+                }
+                return [];
+            }
+        })()`;
+    autolinkingContent = autolinkingContent.replace(
+      'JSON.parse(watchedDirectoriesSerialized)',
+      safeParse
+    );
+    fs.writeFileSync(targetAutolinkingPath, autolinkingContent, 'utf8');
+    console.log('[FinTrack] Successfully patched expo-modules-autolinking mirrorKotlinInlineModulesCommand.js with safe parser');
+  } else {
+    console.log('[FinTrack] expo-modules-autolinking already patched.');
+  }
 }

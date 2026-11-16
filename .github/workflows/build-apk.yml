@@ -44,6 +44,7 @@ jobs:
       - name: ⚙️ Patch Android build features & WatermelonDB
         run: |
           echo "android.defaults.buildfeatures.buildconfig=true" >> android/gradle.properties
+          echo "expo.inlineModules.watchedDirectories=[]" >> android/gradle.properties
           node scripts/patch-watermelondb.js
 
       - name: ⚡ Setup Gradle Cache
