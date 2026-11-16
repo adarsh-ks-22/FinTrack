@@ -111,6 +111,97 @@ assert(formatCurrency(0) === '₹0.00', 'Formats 0 correctly as ₹0.00');
 assert(formatCurrency(1250.5, '$') === '$1,250.50', 'Formats $1250.50 correctly with USD symbol');
 assert(formatCurrency(NaN) === '₹0.00', 'Handles NaN gracefully without crashing');
 
+// 6. Budget Derived Values & Savings Baseline Safeguard
+function computeDerivedBudget(
+  budget: { totalBudget: number; needsPct: number; wantsPct: number; savingsPct: number } | null,
+  transactions: { expenseType: ExpenseType; amount: number }[]
+) {
+  if (!budget) {
+    const needsSpent = transactions
+      .filter((t) => t.expenseType === ExpenseType.Needs)
+      .reduce((sum, t) => sum + t.amount, 0);
+    const wantsSpent = transactions
+      .filter((t) => t.expenseType === ExpenseType.Wants)
+      .reduce((sum, t) => sum + t.amount, 0);
+    const savingsSpent = transactions
+      .filter((t) => t.expenseType === ExpenseType.Savings)
+      .reduce((sum, t) => sum + t.amount, 0);
+    return {
+      totalBudget: 0,
+      needsLimit: 0,
+      wantsLimit: 0,
+      savingsTarget: 0,
+      totalSpent: needsSpent + wantsSpent,
+      needsSpent,
+      wantsSpent,
+      savedSoFar: savingsSpent,
+      remainingBudget: 0,
+      budgetExceeded: false,
+    };
+  }
+
+  const totalBudget = Math.max(0, budget.totalBudget);
+  const needsLimit = (totalBudget * budget.needsPct) / 100;
+  const wantsLimit = (totalBudget * budget.wantsPct) / 100;
+  const savingsTarget = (totalBudget * budget.savingsPct) / 100;
+
+  const needsSpent = transactions
+    .filter((t) => t.expenseType === ExpenseType.Needs)
+    .reduce((sum, t) => sum + t.amount, 0);
+  const wantsSpent = transactions
+    .filter((t) => t.expenseType === ExpenseType.Wants)
+    .reduce((sum, t) => sum + t.amount, 0);
+  const savingsSpent = transactions
+    .filter((t) => t.expenseType === ExpenseType.Savings)
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalSpent = needsSpent + wantsSpent;
+  const savedSoFar = savingsSpent;
+  const remainingBudget = Math.max(0, totalBudget - totalSpent);
+
+  return {
+    totalBudget,
+    needsLimit,
+    wantsLimit,
+    savingsTarget,
+    totalSpent,
+    needsSpent,
+    wantsSpent,
+    savedSoFar,
+    remainingBudget,
+    needsExceeded: needsLimit > 0 && needsSpent > needsLimit,
+    wantsExceeded: wantsLimit > 0 && wantsSpent > wantsLimit,
+    budgetExceeded: totalBudget > 0 && totalSpent > totalBudget,
+  };
+}
+
+const testBudget = { totalBudget: 50000, needsPct: 50, wantsPct: 30, savingsPct: 20 };
+
+// Zero transactions: savings must start at 0, not at savingsTarget (₹10,000)
+const initialDerived = computeDerivedBudget(testBudget, []);
+assert(initialDerived.savedSoFar === 0, 'Savings starts at 0 with zero transactions (not pre-filled)', `Got: ${initialDerived.savedSoFar}`);
+assert(initialDerived.savingsTarget === 10000, 'Savings target correctly calculated as 20% of 50,000 (10,000)', `Got: ${initialDerived.savingsTarget}`);
+assert(initialDerived.totalSpent === 0, 'Total spent starts at 0', `Got: ${initialDerived.totalSpent}`);
+assert(initialDerived.remainingBudget === 50000, 'Remaining budget starts at full 50,000', `Got: ${initialDerived.remainingBudget}`);
+assert(!initialDerived.budgetExceeded, 'Budget is not exceeded with zero transactions');
+
+// Adding savings transaction increments savedSoFar starting from 0, and does not increase totalSpent
+const txWithSavings = [
+  { expenseType: ExpenseType.Savings, amount: 2500 },
+];
+const savingsDerived = computeDerivedBudget(testBudget, txWithSavings);
+assert(savingsDerived.savedSoFar === 2500, 'Adding savings transaction increases savedSoFar from 0 to 2500', `Got: ${savingsDerived.savedSoFar}`);
+assert(savingsDerived.totalSpent === 0, 'Savings transactions do not increase totalSpent', `Got: ${savingsDerived.totalSpent}`);
+assert(savingsDerived.remainingBudget === 50000, 'Remaining budget not reduced by savings transactions');
+
+// Reaching or exceeding savings goal
+const txGoalMet = [
+  { expenseType: ExpenseType.Savings, amount: 10000 },
+];
+const goalMetDerived = computeDerivedBudget(testBudget, txGoalMet);
+assert(goalMetDerived.savedSoFar >= goalMetDerived.savingsTarget, 'Savings target met when savedSoFar equals savingsTarget');
+assert(!goalMetDerived.budgetExceeded, 'Meeting savings target does not mark budget as exceeded');
+
 console.log(`\nCore Engine Test Summary: ${passed} Passed, ${failed} Failed.`);
 if (failed > 0) {
   process.exit(1);
