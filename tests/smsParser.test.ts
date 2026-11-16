@@ -161,6 +161,28 @@ const testCases: TestCase[] = [
       expenseType: ExpenseType.Needs,
     },
   },
+  // 15. Real-world Bank Deducted Alert
+  {
+    name: 'Canara Bank Deducted Alert',
+    sms: 'Dear Customer, Rs. 750.00 has been deducted from your A/C XX4567 on 15-Nov-2024 towards Zomato. Avl Bal: Rs. 14,200.00',
+    expected: {
+      isDebit: true,
+      amount: 750,
+      category: Category.Food,
+      expenseType: ExpenseType.Wants,
+    },
+  },
+  // 16. Auto-debited SIP/EMI Alert
+  {
+    name: 'Auto-debited Alert',
+    sms: 'Rs 1500.00 auto-debited from A/C XX7890 towards EMI on 10-Nov-24. Avail Bal: Rs 8,500.00',
+    expected: {
+      isDebit: true,
+      amount: 1500,
+      category: Category.EMI,
+      expenseType: ExpenseType.Needs,
+    },
+  },
 ];
 
 console.log('--- Starting SMS Parser Test Suite ---');

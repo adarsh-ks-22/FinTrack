@@ -254,14 +254,14 @@ export default function AddTransactionModal() {
 
   if (isLoadingEdit) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-gray-50" edges={['top', 'bottom']}>
+      <SafeAreaView className="flex-1 items-center justify-center bg-gray-50 dark:bg-gray-950" edges={['top', 'bottom']}>
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -281,16 +281,16 @@ export default function AddTransactionModal() {
           }}
         >
           {/* ── Bottom-sheet drag pill ── */}
-          <View className="items-center pt-2 pb-1 bg-white">
-            <View className="h-1.5 w-12 rounded-full bg-gray-300" />
+          <View className="items-center pt-2 pb-1 bg-white dark:bg-gray-900">
+            <View className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
           </View>
 
           {/* ── Header ── */}
-          <View className="flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+          <View className="flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
             <TouchableOpacity onPress={() => router.back()} className="p-1">
               <Ionicons name="close" size={24} color="#6b7280" />
             </TouchableOpacity>
-            <Text className="text-base font-semibold text-gray-800">
+            <Text className="text-base font-semibold text-gray-800 dark:text-gray-100">
               {isEdit ? 'Edit Transaction' : 'Add Transaction'}
             </Text>
             <TouchableOpacity
@@ -314,12 +314,12 @@ export default function AddTransactionModal() {
           >
             {/* ── Amount Input ── */}
             <View className="mb-5">
-              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Amount ({currencySymbol})
               </Text>
               <View
-                className={`flex-row items-center rounded-xl bg-white px-4 shadow-sm ${
-                  errors.amount ? 'border border-red-500' : 'border border-gray-200'
+                className={`flex-row items-center rounded-xl bg-white px-4 shadow-sm dark:bg-gray-800 ${
+                  errors.amount ? 'border border-red-500' : 'border border-gray-200 dark:border-gray-700'
                 }`}
               >
                 <Text className="text-xl font-bold text-gray-400 mr-1">{currencySymbol}</Text>
@@ -331,7 +331,7 @@ export default function AddTransactionModal() {
                   }}
                   placeholder="0.00"
                   keyboardType="decimal-pad"
-                  className="flex-1 py-3.5 text-2xl font-bold text-gray-800"
+                  className="flex-1 py-3.5 text-2xl font-bold text-gray-800 dark:text-gray-100"
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
                 />
@@ -343,7 +343,7 @@ export default function AddTransactionModal() {
 
             {/* ── Category Picker ── */}
             <View className="mb-5">
-              <Text className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <Text className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Category
               </Text>
               {errors.category ? (
@@ -371,12 +371,12 @@ export default function AddTransactionModal() {
                       className={`rounded-full border px-3.5 py-2 ${
                         isSelected
                           ? 'border-indigo-600 bg-indigo-600'
-                          : 'border-gray-200 bg-white'
+                          : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
                       }`}
                     >
                       <Text
                         className={`text-sm font-medium ${
-                          isSelected ? 'text-white' : 'text-gray-700'
+                          isSelected ? 'text-white' : 'text-gray-700 dark:text-gray-200'
                         }`}
                       >
                         {meta.label}
@@ -388,16 +388,16 @@ export default function AddTransactionModal() {
 
               {/* ── Custom Category Input (shown when 'Other' is selected) ── */}
               {category === Category.Other && (
-                <View className="mt-3 rounded-2xl bg-indigo-50/70 p-3.5 border border-indigo-200">
+                <View className="mt-3 rounded-2xl bg-indigo-50/70 p-3.5 border border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-900/60">
                   <View className="flex-row items-center justify-between mb-1.5">
-                    <Text className="text-xs font-bold text-indigo-950">
+                    <Text className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
                       Specify Category Name
                     </Text>
-                    <Text className="text-[11px] font-semibold text-indigo-600">
+                    <Text className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
                       {customCategory.trim() ? `Tracked as "${customCategory.trim()}"` : 'Custom label'}
                     </Text>
                   </View>
-                  <View className="flex-row items-center rounded-xl bg-white px-3.5 border border-indigo-200">
+                  <View className="flex-row items-center rounded-xl bg-white px-3.5 border border-indigo-200 dark:bg-gray-800 dark:border-gray-700">
                     <Ionicons name="pricetag-outline" size={16} color="#6366f1" />
                     <TextInput
                       value={customCategory}
@@ -407,7 +407,7 @@ export default function AddTransactionModal() {
                       }}
                       placeholder="e.g. Gym, Pet Care, Insurance, Education..."
                       placeholderTextColor="#9ca3af"
-                      className="ml-2 flex-1 py-2.5 text-sm font-semibold text-gray-800"
+                      className="ml-2 flex-1 py-2.5 text-sm font-semibold text-gray-800 dark:text-gray-100"
                       returnKeyType="done"
                       maxLength={30}
                     />
@@ -423,7 +423,7 @@ export default function AddTransactionModal() {
 
             {/* ── Expense Type Segmented Control ── */}
             <View className="mb-5">
-              <Text className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <Text className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Expense Type
               </Text>
               {errors.expenseType ? (
@@ -443,13 +443,13 @@ export default function AddTransactionModal() {
                       className={`flex-1 items-center rounded-xl border py-3 ${
                         isSelected
                           ? `${cfg.activeClass} ${cfg.activeBorder}`
-                          : 'border-gray-200 bg-white'
+                          : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
                       }`}
                     >
                       <Text className="text-base">{cfg.icon}</Text>
                       <Text
                         className={`mt-0.5 text-xs font-semibold ${
-                          isSelected ? 'text-white' : 'text-gray-700'
+                          isSelected ? 'text-white' : 'text-gray-700 dark:text-gray-200'
                         }`}
                       >
                         {cfg.label}
@@ -462,12 +462,12 @@ export default function AddTransactionModal() {
 
             {/* ── Date & Time Input ── */}
             <View className="mb-5">
-              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Date &amp; Time (IST)
               </Text>
               <View
-                className={`flex-row items-center rounded-xl bg-white px-4 shadow-sm ${
-                  errors.dateTimeStr ? 'border border-red-500' : 'border border-gray-200'
+                className={`flex-row items-center rounded-xl bg-white px-4 shadow-sm dark:bg-gray-800 ${
+                  errors.dateTimeStr ? 'border border-red-500' : 'border border-gray-200 dark:border-gray-700'
                 }`}
               >
                 <Ionicons name="calendar-outline" size={18} color="#9ca3af" />
@@ -478,7 +478,7 @@ export default function AddTransactionModal() {
                     if (errors.dateTimeStr) setErrors((e) => ({ ...e, dateTimeStr: undefined }));
                   }}
                   placeholder="DD/MM/YYYY HH:mm"
-                  className="ml-2 flex-1 py-3.5 text-sm text-gray-800"
+                  className="ml-2 flex-1 py-3.5 text-sm text-gray-800 dark:text-gray-100"
                   placeholderTextColor="#9ca3af"
                   keyboardType="numbers-and-punctuation"
                   maxLength={16}
@@ -488,13 +488,13 @@ export default function AddTransactionModal() {
               {errors.dateTimeStr ? (
                 <Text className="mt-1 text-xs text-red-500">{errors.dateTimeStr}</Text>
               ) : (
-                <Text className="mt-1 text-xs text-gray-400">Format: DD/MM/YYYY HH:mm (24-hour)</Text>
+                <Text className="mt-1 text-xs text-gray-400 dark:text-gray-500">Format: DD/MM/YYYY HH:mm (24-hour)</Text>
               )}
             </View>
 
             {/* ── Comment / Note ── */}
             <View className="mb-5">
-              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <Text className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Note (optional)
               </Text>
               <TextInput
@@ -503,7 +503,7 @@ export default function AddTransactionModal() {
                 placeholder="Add a note…"
                 multiline
                 numberOfLines={3}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 shadow-sm"
+                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 placeholderTextColor="#9ca3af"
                 textAlignVertical="top"
                 style={{ minHeight: 72 }}

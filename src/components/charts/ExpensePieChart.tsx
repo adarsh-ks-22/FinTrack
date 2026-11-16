@@ -15,6 +15,7 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from 'nativewind';
 
 import { Category, TransactionRecord } from '@/types';
 import { CATEGORY_META, getCategoryMeta } from '@/constants/categories';
@@ -92,6 +93,8 @@ export function ExpensePieChart({
   currencySymbol: propCurrencySymbol,
   onSelectCategory,
 }: ExpensePieChartProps) {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const storeTransactions = useTransactionStore((s) => s.currentMonthTransactions);
   const storeCurrencySymbol = useSettingsStore((s) => s.currencySymbol);
 
@@ -214,22 +217,22 @@ export function ExpensePieChart({
   }, [totalSpend, slices, selectedCategory]);
 
   return (
-    <View className="mx-4 mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100">
+    <View className="mx-4 mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
       {/* Header with Title and Current Selection Info */}
       <View className="mb-2 flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Ionicons name="pie-chart" size={18} color="#4f46e5" />
-          <Text className="ml-2 text-base font-bold text-gray-800">
+          <Text className="ml-2 text-base font-bold text-gray-800 dark:text-gray-100">
             Monthly Category Split
           </Text>
         </View>
         {selectedCategory && (
           <Pressable
             onPress={() => handleSelectCategory(null)}
-            className="flex-row items-center rounded-full bg-gray-100 px-2.5 py-1"
+            className="flex-row items-center rounded-full bg-gray-100 px-2.5 py-1 dark:bg-gray-700"
           >
-            <Text className="text-xs font-medium text-gray-600 mr-1">Reset</Text>
-            <Ionicons name="close-circle" size={14} color="#6b7280" />
+            <Text className="text-xs font-medium text-gray-600 mr-1 dark:text-gray-300">Reset</Text>
+            <Ionicons name="close-circle" size={14} color={isDark ? '#9ca3af' : '#6b7280'} />
           </Pressable>
         )}
       </View>
@@ -263,13 +266,13 @@ export function ExpensePieChart({
           <Pressable
             onPress={() => handleSelectCategory(null)}
             style={styles.centerHub}
-            className="items-center justify-center rounded-full bg-white shadow-md border border-gray-100"
+            className="items-center justify-center rounded-full bg-white shadow-md border border-gray-100 dark:bg-gray-900 dark:border-gray-700"
           >
             {totalSpend === 0 ? (
               // Empty state inside hub
               <View className="items-center px-2">
-                <Ionicons name="receipt-outline" size={24} color="#94a3b8" />
-                <Text className="mt-1 text-center text-xs font-semibold text-gray-500">
+                <Ionicons name="receipt-outline" size={24} color={isDark ? '#64748b' : '#94a3b8'} />
+                <Text className="mt-1 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">
                   No expenses this month yet
                 </Text>
               </View>
@@ -284,14 +287,14 @@ export function ExpensePieChart({
                 </View>
                 <Text
                   numberOfLines={1}
-                  className="text-xs font-bold text-gray-700"
+                  className="text-xs font-bold text-gray-700 dark:text-gray-200"
                 >
                   {activeSlice.label}
                 </Text>
                 <CurrencyText
                   amount={activeSlice.amount}
                   currencySymbol={currencySymbol}
-                  className="text-sm font-extrabold text-gray-900"
+                  className="text-sm font-extrabold text-gray-900 dark:text-gray-100"
                 />
                 <Text
                   style={{ color: activeSlice.color }}
@@ -309,10 +312,10 @@ export function ExpensePieChart({
                 <CurrencyText
                   amount={totalSpend}
                   currencySymbol={currencySymbol}
-                  className="text-base font-extrabold text-gray-900"
+                  className="text-base font-extrabold text-gray-900 dark:text-gray-100"
                 />
-                <View className="mt-1 rounded-full bg-indigo-50 px-2 py-0.5">
-                  <Text className="text-[10px] font-semibold text-indigo-600">
+                <View className="mt-1 rounded-full bg-indigo-50 px-2 py-0.5 dark:bg-indigo-950/60">
+                  <Text className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
                     {slices.length} {slices.length === 1 ? 'Category' : 'Categories'}
                   </Text>
                 </View>
@@ -326,7 +329,7 @@ export function ExpensePieChart({
       {/* Proportional Linear Multi-Color Stack Bar */}
       {totalSpend > 0 && (
         <View className="mt-2 mb-3">
-          <View className="h-2 w-full flex-row overflow-hidden rounded-full bg-gray-100">
+          <View className="h-2 w-full flex-row overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
             {slices.map((slice) => {
               const isSelected = selectedCategory === slice.category;
               const isAny = selectedCategory !== null;
@@ -371,12 +374,12 @@ export function ExpensePieChart({
                   style={({ pressed }) => [
                     isSelected
                       ? {
-                          backgroundColor: `${slice.color}10`,
+                          backgroundColor: `${slice.color}15`,
                           borderColor: slice.color,
                         }
                       : {
-                          backgroundColor: '#f8fafc',
-                          borderColor: '#f1f5f9',
+                          backgroundColor: isDark ? '#1f2937' : '#f8fafc',
+                          borderColor: isDark ? '#374151' : '#f1f5f9',
                         },
                     { opacity: pressed ? 0.8 : 1 },
                   ]}
@@ -394,13 +397,13 @@ export function ExpensePieChart({
                       <Text
                         numberOfLines={1}
                         className={`text-sm ${
-                          isSelected ? 'font-bold text-gray-900' : 'font-medium text-gray-700'
+                          isSelected ? 'font-bold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-200'
                         }`}
                       >
                         {slice.label}
                       </Text>
                       {/* Mini bar for relative scale */}
-                      <View className="mt-1 h-1 w-24 overflow-hidden rounded-full bg-gray-200">
+                      <View className="mt-1 h-1 w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                         <View
                           style={{
                             width: `${slice.percentage}%`,
@@ -418,7 +421,7 @@ export function ExpensePieChart({
                       amount={slice.amount}
                       currencySymbol={currencySymbol}
                       className={`text-sm font-bold ${
-                        isSelected ? 'text-gray-900' : 'text-gray-800'
+                        isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-800 dark:text-gray-200'
                       }`}
                     />
                     <View

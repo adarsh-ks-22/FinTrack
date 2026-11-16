@@ -1,7 +1,7 @@
 // ============================================================
 // app/(tabs)/transactions.tsx
 // Transactions list screen — Phase 2 full implementation
-// FilterBar | Custom date range | TransactionCard FlatList
+// FilterBar | Custom date range | TransactionCard FlatList | SMS Sync
 // ============================================================
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -12,9 +12,12 @@ import {
   Pressable,
   TextInput,
   ScrollView,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import {
   startOfDay,
   endOfDay,
@@ -31,6 +34,7 @@ import { FAB } from '@/components/layout/FAB';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TransactionCard } from '@/components/transactions/TransactionCard';
 import { useTransactionStore } from '@/stores/useTransactionStore';
+import { syncSmsInbox } from '@/services/smsService';
 import { TransactionRecord } from '@/types';
 
 // --------------- Filter types ---------------
@@ -82,6 +86,20 @@ export default function TransactionsScreen() {
   const [customTo, setCustomTo] = useState('');
   const [customApplied, setCustomApplied] = useState(false);
   const [customError, setCustomError] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // ── Sync SMS from Inbox Handler ──
+  const handleSyncSms = useCallback(async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await syncSmsInbox(150, 30);
+    } catch (err) {
+      console.error('[TransactionsScreen] SMS inbox sync error:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing]);
 
   // ── Filtered transactions ──
   const filteredTransactions = useMemo<TransactionRecord[]>(() => {
@@ -151,10 +169,43 @@ export default function TransactionsScreen() {
       <ScreenHeader
         title="Transactions"
         subtitle={`${sorted.length} record${sorted.length !== 1 ? 's' : ''}`}
+        rightAction={{
+          icon: 'sync-outline',
+          loading: isSyncing,
+          onPress: handleSyncSms,
+          accessibilityLabel: 'Sync SMS from inbox',
+        }}
       />
 
+      {/* ── SMS Quick Sync Action Banner ── */}
+      <View className="flex-row items-center justify-between border-b border-indigo-100 bg-indigo-50/70 px-4 py-2 dark:border-gray-800 dark:bg-gray-900">
+        <View className="mr-2 flex-1 flex-row items-center">
+          <Ionicons name="chatbubbles-outline" size={15} color="#6366f1" />
+          <Text
+            className="ml-1.5 text-xs text-indigo-900 dark:text-indigo-200"
+            numberOfLines={1}
+          >
+            Auto-detect bank debit SMS
+          </Text>
+        </View>
+        <Pressable
+          onPress={handleSyncSms}
+          disabled={isSyncing}
+          className="flex-row items-center rounded-lg bg-indigo-600 px-3 py-1.5 active:bg-indigo-700"
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color="#ffffff" style={{ transform: [{ scale: 0.75 }] }} />
+          ) : (
+            <Ionicons name="sync" size={12} color="#ffffff" />
+          )}
+          <Text className="ml-1 text-xs font-bold text-white">
+            {isSyncing ? 'Syncing...' : 'Sync SMS'}
+          </Text>
+        </Pressable>
+      </View>
+
       {/* ── Filter chips ── */}
-      <View className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 py-3">
+      <View className="border-b border-gray-100 bg-white py-3 dark:border-gray-800 dark:bg-gray-900">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -190,7 +241,7 @@ export default function TransactionsScreen() {
           <View className="mt-2 px-4">
             <View className="flex-row items-center gap-2">
               <View className="flex-1">
-                <Text className="mb-0.5 text-xs text-gray-500">From</Text>
+                <Text className="mb-0.5 text-xs text-gray-500 dark:text-gray-400">From</Text>
                 <TextInput
                   value={customFrom}
                   onChangeText={(v) => {
@@ -202,11 +253,11 @@ export default function TransactionsScreen() {
                   placeholderTextColor="#9ca3af"
                   keyboardType="numbers-and-punctuation"
                   maxLength={10}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800"
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 />
               </View>
               <View className="flex-1">
-                <Text className="mb-0.5 text-xs text-gray-500">To</Text>
+                <Text className="mb-0.5 text-xs text-gray-500 dark:text-gray-400">To</Text>
                 <TextInput
                   value={customTo}
                   onChangeText={(v) => {
@@ -218,12 +269,12 @@ export default function TransactionsScreen() {
                   placeholderTextColor="#9ca3af"
                   keyboardType="numbers-and-punctuation"
                   maxLength={10}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800"
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 />
               </View>
               <Pressable
                 onPress={handleApplyCustom}
-                className="mt-4 rounded-lg bg-indigo-600 px-3 py-2"
+                className="mt-4 rounded-lg bg-indigo-600 px-3 py-2 active:bg-indigo-700"
               >
                 <Text className="text-sm font-semibold text-white">Apply</Text>
               </Pressable>
@@ -248,7 +299,7 @@ export default function TransactionsScreen() {
                 ? 'No transactions this week.'
                 : activeFilter === 'custom'
                 ? 'No transactions in the selected range.'
-                : 'No transactions this month. Add one!'
+                : 'No transactions this month. Tap Sync SMS or Add one!'
             }
             actionLabel="Add Transaction"
             onAction={() => router.push('/modals/add-transaction')}
@@ -262,6 +313,14 @@ export default function TransactionsScreen() {
           contentContainerStyle={{ paddingTop: 12, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews
+          refreshControl={
+            <RefreshControl
+              refreshing={isSyncing}
+              onRefresh={handleSyncSms}
+              colors={['#4f46e5']}
+              tintColor="#4f46e5"
+            />
+          }
         />
       )}
 

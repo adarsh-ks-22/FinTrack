@@ -294,26 +294,26 @@ export default function AddRecurringModal() {
               },
             ],
           }}
-          className="max-h-[92%] rounded-t-3xl bg-white shadow-2xl border-t border-gray-100"
+          className="max-h-[92%] rounded-t-3xl bg-white shadow-2xl border-t border-gray-100 dark:bg-gray-800 dark:border-gray-700"
         >
           {/* Header Bar */}
-          <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
+          <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
             <View className="flex-row items-center">
-              <View className="mr-2.5 h-8 w-8 items-center justify-center rounded-xl bg-indigo-50">
+              <View className="mr-2.5 h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/60">
                 <Ionicons
                   name={isEdit ? 'create-outline' : 'repeat-outline'}
                   size={18}
                   color="#4f46e5"
                 />
               </View>
-              <Text className="text-lg font-bold text-gray-900">
+              <Text className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 {isEdit ? 'Edit Recurring Bill' : 'New Recurring Bill'}
               </Text>
             </View>
 
             <TouchableOpacity
               onPress={handleClose}
-              className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
+              className="h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
             >
               <Ionicons name="close" size={18} color="#6b7280" />
             </TouchableOpacity>
@@ -332,12 +332,12 @@ export default function AddRecurringModal() {
             >
               {/* 1. Payment Name */}
               <View className="mb-4">
-                <Text className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
+                <Text className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Bill / Subscription Name <Text className="text-red-500">*</Text>
                 </Text>
                 <View
-                  className={`flex-row items-center rounded-2xl bg-gray-50 px-3.5 py-3 border ${
-                    errors.name ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                  className={`flex-row items-center rounded-2xl bg-gray-50 px-3.5 py-3 border dark:bg-gray-700/60 ${
+                    errors.name ? 'border-red-400 bg-red-50/20' : 'border-gray-200 dark:border-gray-600'
                   }`}
                 >
                   <Ionicons name="card-outline" size={18} color="#6b7280" style={{ marginRight: 4 }} />
@@ -349,7 +349,7 @@ export default function AddRecurringModal() {
                     }}
                     placeholder="e.g. Netflix, House Rent, Gym"
                     placeholderTextColor="#9ca3af"
-                    className="flex-1 ml-2 text-sm font-semibold text-gray-900"
+                    className="flex-1 ml-2 text-sm font-semibold text-gray-900 dark:text-white"
                   />
                   {name.length > 0 && (
                     <TouchableOpacity onPress={() => setName('')} hitSlop={6}>
@@ -376,12 +376,12 @@ export default function AddRecurringModal() {
                         className={`rounded-full px-2.5 py-1 border ${
                           name === suggested
                             ? 'bg-indigo-600 border-indigo-600'
-                            : 'bg-gray-100 border-gray-200'
+                            : 'bg-gray-100 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                         }`}
                       >
                         <Text
                           className={`text-[11px] font-semibold ${
-                            name === suggested ? 'text-white' : 'text-gray-600'
+                            name === suggested ? 'text-white' : 'text-gray-600 dark:text-gray-200'
                           }`}
                         >
                           {suggested}
@@ -394,15 +394,15 @@ export default function AddRecurringModal() {
 
               {/* 2. Amount Input with Active Currency Prefix */}
               <View className="mb-4">
-                <Text className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
+                <Text className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Amount <Text className="text-red-500">*</Text>
                 </Text>
                 <View
-                  className={`flex-row items-center rounded-2xl bg-gray-50 px-4 py-3 border ${
-                    errors.amount ? 'border-red-400 bg-red-50/20' : 'border-gray-200'
+                  className={`flex-row items-center rounded-2xl bg-gray-50 px-4 py-3 border dark:bg-gray-700/60 ${
+                    errors.amount ? 'border-red-400 bg-red-50/20' : 'border-gray-200 dark:border-gray-600'
                   }`}
                 >
-                  <Text className="text-2xl font-extrabold text-indigo-600 mr-2">
+                  <Text className="text-2xl font-extrabold text-indigo-600 mr-2 dark:text-indigo-400">
                     {currencySymbol}
                   </Text>
                   <TextInput
@@ -415,7 +415,7 @@ export default function AddRecurringModal() {
                     placeholder="0.00"
                     placeholderTextColor="#9ca3af"
                     keyboardType="decimal-pad"
-                    className="flex-1 text-2xl font-bold text-gray-900"
+                    className="flex-1 text-2xl font-bold text-gray-900 dark:text-white"
                   />
                   {amount.length > 0 && (
                     <TouchableOpacity onPress={() => setAmount('')} hitSlop={6}>
@@ -444,7 +444,7 @@ export default function AddRecurringModal() {
                         className={`flex-row items-center rounded-xl px-3 py-2 border ${
                           isSelected
                             ? 'bg-indigo-600 border-indigo-600'
-                            : 'bg-gray-50 border-gray-200'
+                            : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                         }`}
                       >
                         <Ionicons
@@ -455,7 +455,7 @@ export default function AddRecurringModal() {
                         />
                         <Text
                           className={`text-xs font-semibold ml-1 ${
-                            isSelected ? 'text-white' : 'text-gray-700'
+                            isSelected ? 'text-white' : 'text-gray-700 dark:text-gray-200'
                           }`}
                         >
                           {meta.label}
@@ -526,14 +526,14 @@ export default function AddRecurringModal() {
               </View>
 
               {/* 5. Due Day Picker (1 to 31) with Month-end Clamping Note */}
-              <View className="mb-4 rounded-2xl bg-gray-50 p-3.5 border border-gray-200">
+              <View className="mb-4 rounded-2xl bg-gray-50 p-3.5 border border-gray-200 dark:bg-gray-700/60 dark:border-gray-600">
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  <Text className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Day of Month Due
                   </Text>
-                  <View className="flex-row items-center rounded-full bg-indigo-100 px-3 py-1">
+                  <View className="flex-row items-center rounded-full bg-indigo-100 px-3 py-1 dark:bg-indigo-950/60">
                     <Ionicons name="calendar-outline" size={13} color="#4f46e5" />
-                    <Text className="ml-1 text-xs font-extrabold text-indigo-700">
+                    <Text className="ml-1 text-xs font-extrabold text-indigo-700 dark:text-indigo-300">
                       {getOrdinalSuffix(dueDay)} of every month
                     </Text>
                   </View>
@@ -554,12 +554,12 @@ export default function AddRecurringModal() {
                         className={`h-9 w-9 items-center justify-center rounded-xl border ${
                           isSelected
                             ? 'bg-indigo-600 border-indigo-600'
-                            : 'bg-white border-gray-200'
+                            : 'bg-white border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                         }`}
                       >
                         <Text
                           className={`text-xs font-bold ${
-                            isSelected ? 'text-white' : 'text-gray-800'
+                            isSelected ? 'text-white' : 'text-gray-800 dark:text-gray-200'
                           }`}
                         >
                           {d}
@@ -570,14 +570,14 @@ export default function AddRecurringModal() {
                 </ScrollView>
 
                 {/* Month-End Clamping Helper Notice */}
-                <View className="mt-2 flex-row items-start rounded-xl bg-blue-50/70 p-2.5 border border-blue-100">
+                <View className="mt-2 flex-row items-start rounded-xl bg-blue-50/70 p-2.5 border border-blue-100 dark:bg-blue-950/40 dark:border-blue-900/60">
                   <Ionicons
                     name="information-circle-outline"
                     size={16}
                     color="#2563eb"
                     style={{ marginRight: 4, marginTop: 2 }}
                   />
-                  <Text className="ml-1 flex-1 text-[11px] leading-4 text-blue-800">
+                  <Text className="ml-1 flex-1 text-[11px] leading-4 text-blue-800 dark:text-blue-300">
                     <Text className="font-bold">Clamped for short months:</Text> If set to day 29,
                     30, or 31, reminders and due dates automatically adjust to the final day of
                     shorter months (e.g. Feb 28/29, Apr 30).
@@ -586,12 +586,12 @@ export default function AddRecurringModal() {
               </View>
 
               {/* 6. Notify Days Before Selector */}
-              <View className="mb-4 rounded-2xl bg-gray-50 p-3.5 border border-gray-200">
+              <View className="mb-4 rounded-2xl bg-gray-50 p-3.5 border border-gray-200 dark:bg-gray-700/60 dark:border-gray-600">
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  <Text className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Reminder Alerts
                   </Text>
-                  <Text className="text-xs font-bold text-gray-700">
+                  <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">
                     {notifyDaysBefore === 0
                       ? 'Alert on due day'
                       : `Alert ${notifyDaysBefore} ${
@@ -611,12 +611,12 @@ export default function AddRecurringModal() {
                         className={`flex-1 items-center justify-center rounded-xl py-2.5 border ${
                           isSelected
                             ? 'bg-indigo-600 border-indigo-600'
-                            : 'bg-white border-gray-200'
+                            : 'bg-white border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                         }`}
                       >
                         <Text
                           className={`text-xs font-bold ${
-                            isSelected ? 'text-white' : 'text-gray-700'
+                            isSelected ? 'text-white' : 'text-gray-700 dark:text-gray-200'
                           }`}
                         >
                           {days} {days === 1 ? 'day' : 'days'}
@@ -628,12 +628,12 @@ export default function AddRecurringModal() {
               </View>
 
               {/* 7. Active Toggle Switch */}
-              <View className="mb-6 flex-row items-center justify-between rounded-2xl bg-gray-50 p-4 border border-gray-200">
+              <View className="mb-6 flex-row items-center justify-between rounded-2xl bg-gray-50 p-4 border border-gray-200 dark:bg-gray-700/60 dark:border-gray-600">
                 <View className="flex-1 pr-3">
-                  <Text className="text-sm font-bold text-gray-900">
+                  <Text className="text-sm font-bold text-gray-900 dark:text-gray-100">
                     Active Reminder Notifications
                   </Text>
-                  <Text className="text-xs text-gray-500 mt-0.5">
+                  <Text className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">
                     Schedule automated push notifications at 9:00 AM IST before each due date.
                   </Text>
                 </View>

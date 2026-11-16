@@ -275,7 +275,7 @@ export default function BudgetScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       <ToastNotification />
 
       <ScreenHeader
@@ -289,21 +289,21 @@ export default function BudgetScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── 1. Total Monthly Budget Input Card ── */}
-        <View className="mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100">
+        <View className="mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            <Text className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Total Monthly Budget
             </Text>
-            <View className="rounded-full bg-indigo-50 px-2.5 py-0.5">
-              <Text className="text-[11px] font-semibold text-indigo-700">
+            <View className="rounded-full bg-indigo-50 px-2.5 py-0.5 dark:bg-indigo-950/60">
+              <Text className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
                 {currentMonthLabel}
               </Text>
             </View>
           </View>
 
           {/* Large Numeric Input with Currency Symbol */}
-          <View className="mt-3 flex-row items-center rounded-2xl bg-gray-50 px-4 py-3 border border-gray-200">
-            <Text className="text-3xl font-extrabold text-indigo-600 mr-2">
+          <View className="mt-3 flex-row items-center rounded-2xl bg-gray-50 px-4 py-3 border border-gray-200 dark:bg-gray-700/60 dark:border-gray-600">
+            <Text className="text-3xl font-extrabold text-indigo-600 mr-2 dark:text-indigo-400">
               {currencySymbol}
             </Text>
             <TextInput
@@ -312,7 +312,7 @@ export default function BudgetScreen() {
               placeholder="0"
               placeholderTextColor="#9ca3af"
               keyboardType="number-pad"
-              className="flex-1 text-3xl font-bold text-gray-900"
+              className="flex-1 text-3xl font-bold text-gray-900 dark:text-white"
             />
             {amountStr.length > 0 && (
               <Pressable onPress={() => handleAmountChange('')} hitSlop={8}>
@@ -323,11 +323,11 @@ export default function BudgetScreen() {
 
           {/* Formatted Number Display */}
           <View className="mt-2 flex-row items-center justify-between">
-            <Text className="text-xs text-gray-500">Preview:</Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400">Preview:</Text>
             <CurrencyText
               amount={numericBudget}
               currencySymbol={currencySymbol}
-              className="text-sm font-bold text-gray-800"
+              className="text-sm font-bold text-gray-800 dark:text-gray-200"
             />
           </View>
 
@@ -340,12 +340,12 @@ export default function BudgetScreen() {
                 className={`rounded-full px-3 py-1.5 border ${
                   numericBudget === val
                     ? 'bg-indigo-600 border-indigo-600'
-                    : 'bg-gray-100 border-gray-200'
+                    : 'bg-gray-100 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                 }`}
               >
                 <Text
                   className={`text-xs font-semibold ${
-                    numericBudget === val ? 'text-white' : 'text-gray-700'
+                    numericBudget === val ? 'text-white' : 'text-gray-700 dark:text-gray-200'
                   }`}
                 >
                   {currencySymbol}
@@ -357,15 +357,15 @@ export default function BudgetScreen() {
         </View>
 
         {/* ── 2. The Split (50/30/20 Presets & Steppers) ── */}
-        <View className="mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100">
+        <View className="mb-4 rounded-3xl bg-white p-5 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
           <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            <Text className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               The Split Allocation
             </Text>
             {/* Validation Badge */}
             <View
               className={`flex-row items-center rounded-full px-2.5 py-1 ${
-                isSplitValid ? 'bg-emerald-50' : 'bg-amber-50'
+                isSplitValid ? 'bg-emerald-50 dark:bg-emerald-950/50' : 'bg-amber-50 dark:bg-amber-950/50'
               }`}
             >
               <Ionicons
@@ -375,7 +375,7 @@ export default function BudgetScreen() {
               />
               <Text
                 className={`ml-1 text-xs font-bold ${
-                  isSplitValid ? 'text-emerald-700' : 'text-amber-700'
+                  isSplitValid ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'
                 }`}
               >
                 Sum: {splitSum}% {isSplitValid ? '✓' : '(Must be 100%)'}
@@ -393,13 +393,13 @@ export default function BudgetScreen() {
                   onPress={() => handleSelectPreset(p.id)}
                   className={`rounded-xl px-3.5 py-2 border ${
                     isSelected
-                      ? 'bg-indigo-50 border-indigo-500'
-                      : 'bg-gray-50 border-gray-200'
+                      ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-950/60 dark:border-indigo-400'
+                      : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                   }`}
                 >
                   <Text
                     className={`text-xs font-bold ${
-                      isSelected ? 'text-indigo-700' : 'text-gray-700'
+                      isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {p.label}
@@ -412,26 +412,26 @@ export default function BudgetScreen() {
           {/* Split Steppers: Needs, Wants, Savings */}
           <View className="space-y-4">
             {/* Needs Stepper */}
-            <View className="rounded-2xl bg-blue-50/50 border border-blue-100 p-3.5">
+            <View className="rounded-2xl bg-blue-50/50 border border-blue-100 p-3.5 dark:bg-blue-950/30 dark:border-blue-900/40">
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                   <View className="mr-2 h-7 w-7 items-center justify-center rounded-lg bg-blue-500">
                     <Text className="text-xs font-bold text-white">🏠</Text>
                   </View>
                   <View>
-                    <Text className="text-sm font-bold text-gray-800">Needs</Text>
-                    <Text className="text-[11px] text-gray-500">
+                    <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">Needs</Text>
+                    <Text className="text-[11px] text-gray-500 dark:text-gray-400">
                       Rent, Groceries, Utilities, Healthcare
                     </Text>
                   </View>
                 </View>
-                <Text className="text-base font-extrabold text-blue-600">
+                <Text className="text-base font-extrabold text-blue-600 dark:text-blue-400">
                   {needsPct}%
                 </Text>
               </View>
 
               {/* Progress bar visual */}
-              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-blue-100">
+              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-blue-100 dark:bg-blue-950">
                 <View
                   style={{ width: `${Math.min(100, needsPct)}%` }}
                   className="h-full bg-blue-500 rounded-full"
@@ -443,58 +443,58 @@ export default function BudgetScreen() {
                 <CurrencyText
                   amount={calculatedNeedsLimit}
                   currencySymbol={currencySymbol}
-                  className="text-xs font-semibold text-blue-700"
+                  className="text-xs font-semibold text-blue-700 dark:text-blue-300"
                   prefix="Target: "
                 />
                 <View className="flex-row items-center gap-1.5">
                   <Pressable
                     onPress={() => adjustSplit('needs', -5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">-5</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-5</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('needs', -1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">-1</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-1</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('needs', 1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">+1</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+1</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('needs', 5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">+5</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+5</Text>
                   </Pressable>
                 </View>
               </View>
             </View>
 
             {/* Wants Stepper */}
-            <View className="rounded-2xl bg-orange-50/50 border border-orange-100 p-3.5">
+            <View className="rounded-2xl bg-orange-50/50 border border-orange-100 p-3.5 dark:bg-orange-950/30 dark:border-orange-900/40">
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                   <View className="mr-2 h-7 w-7 items-center justify-center rounded-lg bg-orange-500">
                     <Text className="text-xs font-bold text-white">🎉</Text>
                   </View>
                   <View>
-                    <Text className="text-sm font-bold text-gray-800">Wants</Text>
-                    <Text className="text-[11px] text-gray-500">
+                    <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">Wants</Text>
+                    <Text className="text-[11px] text-gray-500 dark:text-gray-400">
                       Dining, Entertainment, Shopping, Travel
                     </Text>
                   </View>
                 </View>
-                <Text className="text-base font-extrabold text-orange-600">
+                <Text className="text-base font-extrabold text-orange-600 dark:text-orange-400">
                   {wantsPct}%
                 </Text>
               </View>
 
-              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-orange-100">
+              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-orange-100 dark:bg-orange-950">
                 <View
                   style={{ width: `${Math.min(100, wantsPct)}%` }}
                   className="h-full bg-orange-500 rounded-full"
@@ -505,58 +505,58 @@ export default function BudgetScreen() {
                 <CurrencyText
                   amount={calculatedWantsLimit}
                   currencySymbol={currencySymbol}
-                  className="text-xs font-semibold text-orange-700"
+                  className="text-xs font-semibold text-orange-700 dark:text-orange-300"
                   prefix="Target: "
                 />
                 <View className="flex-row items-center gap-1.5">
                   <Pressable
                     onPress={() => adjustSplit('wants', -5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">-5</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-5</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('wants', -1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">-1</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-1</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('wants', 1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">+1</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+1</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('wants', 5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">+5</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+5</Text>
                   </Pressable>
                 </View>
               </View>
             </View>
 
             {/* Savings Stepper */}
-            <View className="rounded-2xl bg-emerald-50/50 border border-emerald-100 p-3.5">
+            <View className="rounded-2xl bg-emerald-50/50 border border-emerald-100 p-3.5 dark:bg-emerald-950/30 dark:border-emerald-900/40">
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                   <View className="mr-2 h-7 w-7 items-center justify-center rounded-lg bg-emerald-500">
                     <Text className="text-xs font-bold text-white">💰</Text>
                   </View>
                   <View>
-                    <Text className="text-sm font-bold text-gray-800">Savings</Text>
-                    <Text className="text-[11px] text-gray-500">
+                    <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">Savings</Text>
+                    <Text className="text-[11px] text-gray-500 dark:text-gray-400">
                       Emergency Fund, Investments, Deposits
                     </Text>
                   </View>
                 </View>
-                <Text className="text-base font-extrabold text-emerald-600">
+                <Text className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
                   {savingsPct}%
                 </Text>
               </View>
 
-              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-emerald-100">
+              <View className="my-2 h-2 w-full overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-950">
                 <View
                   style={{ width: `${Math.min(100, savingsPct)}%` }}
                   className="h-full bg-emerald-500 rounded-full"
@@ -567,33 +567,33 @@ export default function BudgetScreen() {
                 <CurrencyText
                   amount={calculatedSavingsTarget}
                   currencySymbol={currencySymbol}
-                  className="text-xs font-semibold text-emerald-700"
+                  className="text-xs font-semibold text-emerald-700 dark:text-emerald-300"
                   prefix="Target: "
                 />
                 <View className="flex-row items-center gap-1.5">
                   <Pressable
                     onPress={() => adjustSplit('savings', -5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">-5</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-5</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('savings', -1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">-1</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">-1</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('savings', 1)}
-                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-8 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">+1</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+1</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => adjustSplit('savings', 5)}
-                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs"
+                    className="h-7 w-9 items-center justify-center rounded-lg bg-white border border-gray-200 shadow-xs dark:bg-gray-700 dark:border-gray-600"
                   >
-                    <Text className="text-xs font-bold text-gray-700">+5</Text>
+                    <Text className="text-xs font-bold text-gray-700 dark:text-gray-200">+5</Text>
                   </Pressable>
                 </View>
               </View>
@@ -655,22 +655,22 @@ export default function BudgetScreen() {
         </View>
 
         {/* ── 4. 📅 Recurring Payments Section ── */}
-        <View className="mb-6 rounded-3xl bg-white p-5 shadow-sm border border-gray-100">
+        <View className="mb-6 rounded-3xl bg-white p-5 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
           <View className="flex-row items-center justify-between mb-3">
             <View>
               <View className="flex-row items-center">
-                <Text className="text-base font-extrabold text-gray-900">
+                <Text className="text-base font-extrabold text-gray-900 dark:text-gray-100">
                   📅 Recurring Payments
                 </Text>
                 {activeRecurringCount > 0 && (
-                  <View className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5">
-                    <Text className="text-[10px] font-bold text-emerald-700">
+                  <View className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 dark:bg-emerald-950/60">
+                    <Text className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
                       {activeRecurringCount} Active
                     </Text>
                   </View>
                 )}
               </View>
-              <Text className="text-xs text-gray-500 mt-0.5">
+              <Text className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">
                 {recurringPayments.length === 0
                   ? 'Subscriptions, rent, and monthly bills'
                   : `Total active commitment: ${currencySymbol}${totalRecurringMonthly.toLocaleString(
@@ -691,20 +691,20 @@ export default function BudgetScreen() {
 
           {/* List of Recurring Payments or Empty State */}
           {recurringPayments.length === 0 ? (
-            <View className="items-center justify-center rounded-2xl bg-gray-50 py-8 px-4 border border-dashed border-gray-200">
-              <View className="h-12 w-12 items-center justify-center rounded-full bg-indigo-50 mb-2">
+            <View className="items-center justify-center rounded-2xl bg-gray-50 py-8 px-4 border border-dashed border-gray-200 dark:bg-gray-900/40 dark:border-gray-700">
+              <View className="h-12 w-12 items-center justify-center rounded-full bg-indigo-50 mb-2 dark:bg-indigo-950/50">
                 <Ionicons name="calendar-outline" size={24} color="#6366f1" />
               </View>
-              <Text className="text-sm font-bold text-gray-800">No Recurring Bills Yet</Text>
-              <Text className="mt-1 text-center text-xs text-gray-500 max-w-[260px]">
+              <Text className="text-sm font-bold text-gray-800 dark:text-gray-100">No Recurring Bills Yet</Text>
+              <Text className="mt-1 text-center text-xs text-gray-500 max-w-[260px] dark:text-gray-400">
                 Add your rent, Netflix, gym, and bills to get automated reminders before due dates.
               </Text>
               <TouchableOpacity
                 onPress={() => router.push('/modals/add-recurring')}
-                className="mt-3.5 flex-row items-center rounded-xl bg-indigo-50 px-4 py-2 border border-indigo-100"
+                className="mt-3.5 flex-row items-center rounded-xl bg-indigo-50 px-4 py-2 border border-indigo-100 dark:bg-indigo-950/60 dark:border-indigo-900"
               >
                 <Ionicons name="add-circle-outline" size={16} color="#4f46e5" />
-                <Text className="ml-1.5 text-xs font-bold text-indigo-700">
+                <Text className="ml-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
                   + Add First Recurring Bill
                 </Text>
               </TouchableOpacity>
@@ -722,12 +722,12 @@ export default function BudgetScreen() {
                         params: { editId: item.id },
                       })
                     }
-                    className="rounded-2xl bg-gray-50/70 p-3.5 border border-gray-200 active:bg-gray-100"
+                    className="rounded-2xl bg-gray-50/70 p-3.5 border border-gray-200 active:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-700 active:dark:bg-gray-700"
                   >
                     {/* Top Row: Icon, Name, Category Badges & Amount */}
                     <View className="flex-row items-center justify-between">
                       <View className="flex-row items-center flex-1 mr-2">
-                        <View className="mr-2.5 h-9 w-9 items-center justify-center rounded-xl bg-white shadow-xs border border-gray-100">
+                        <View className="mr-2.5 h-9 w-9 items-center justify-center rounded-xl bg-white shadow-xs border border-gray-100 dark:bg-gray-800 dark:border-gray-600">
                           <Ionicons
                             name={meta?.icon as any}
                             size={18}
@@ -737,7 +737,7 @@ export default function BudgetScreen() {
                         <View className="flex-1">
                           <Text
                             className={`text-sm font-bold ${
-                              item.isActive ? 'text-gray-900' : 'text-gray-400'
+                              item.isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'
                             }`}
                             numberOfLines={1}
                           >
@@ -747,8 +747,8 @@ export default function BudgetScreen() {
                             <Badge
                               label={meta?.label || item.category}
                               size="sm"
-                              className="bg-white border border-gray-200 px-1.5 py-0.5"
-                              textClassName="text-[10px] text-gray-600 font-semibold"
+                              className="bg-white border border-gray-200 px-1.5 py-0.5 dark:bg-gray-800 dark:border-gray-600"
+                              textClassName="text-[10px] text-gray-600 dark:text-gray-300 font-semibold"
                             />
                             <Badge
                               label={item.expenseType}
@@ -777,13 +777,13 @@ export default function BudgetScreen() {
                         amount={item.amount}
                         currencySymbol={currencySymbol}
                         className={`text-base font-extrabold ${
-                          item.isActive ? 'text-gray-900' : 'text-gray-400'
+                          item.isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'
                         }`}
                       />
                     </View>
 
                     {/* Bottom Row: Due Day Indicator + Active Switch + Actions */}
-                    <View className="mt-3 pt-2.5 border-t border-gray-200/60 flex-row items-center justify-between">
+                    <View className="mt-3 pt-2.5 border-t border-gray-200/60 flex-row items-center justify-between dark:border-gray-700">
                       <View className="flex-row items-center flex-1 mr-2">
                         <Ionicons
                           name="notifications-outline"
@@ -792,7 +792,7 @@ export default function BudgetScreen() {
                         />
                         <Text
                           className={`ml-1 text-[11px] ${
-                            item.isActive ? 'text-gray-600 font-medium' : 'text-gray-400'
+                            item.isActive ? 'text-gray-600 font-medium dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'
                           }`}
                         >
                           Due on {getOrdinalSuffix(item.dueDay)} •{' '}
@@ -901,30 +901,30 @@ function SummaryCard({
 
   // Status Badge Logic
   let statusText = 'On Track';
-  let badgeBg = 'bg-emerald-50';
-  let badgeText = 'text-emerald-700';
+  let badgeBg = 'bg-emerald-50 dark:bg-emerald-950/60';
+  let badgeText = 'text-emerald-700 dark:text-emerald-300';
   let statusIcon: keyof typeof Ionicons.glyphMap = 'checkmark-circle';
-  let cardBorder = 'border-gray-200';
-  let cardBg = 'bg-white';
+  let cardBorder = 'border-gray-200 dark:border-gray-700';
+  let cardBg = 'bg-white dark:bg-gray-800';
 
   if (isOver) {
     statusText = 'Over Budget';
-    badgeBg = 'bg-red-100';
-    badgeText = 'text-red-700';
+    badgeBg = 'bg-red-100 dark:bg-red-950/60';
+    badgeText = 'text-red-700 dark:text-red-300';
     statusIcon = 'warning';
-    cardBorder = 'border-red-400';
-    cardBg = 'bg-red-50/30';
+    cardBorder = 'border-red-400 dark:border-red-800';
+    cardBg = 'bg-red-50/30 dark:bg-red-950/20';
   } else if (isNear) {
     statusText = 'Near Limit';
-    badgeBg = 'bg-amber-100';
-    badgeText = 'text-amber-700';
+    badgeBg = 'bg-amber-100 dark:bg-amber-950/60';
+    badgeText = 'text-amber-700 dark:text-amber-300';
     statusIcon = 'alert-circle';
-    cardBorder = 'border-amber-300';
-    cardBg = 'bg-amber-50/20';
+    cardBorder = 'border-amber-300 dark:border-amber-700';
+    cardBg = 'bg-amber-50/20 dark:bg-amber-950/20';
   } else if (isSavings) {
     statusText = spent >= limit && limit > 0 ? 'Goal Met' : 'In Progress';
-    badgeBg = spent >= limit ? 'bg-emerald-100' : 'bg-blue-50';
-    badgeText = spent >= limit ? 'text-emerald-800' : 'text-blue-700';
+    badgeBg = spent >= limit ? 'bg-emerald-100 dark:bg-emerald-950/60' : 'bg-blue-50 dark:bg-blue-950/60';
+    badgeText = spent >= limit ? 'text-emerald-800 dark:text-emerald-300' : 'text-blue-700 dark:text-blue-300';
     statusIcon = spent >= limit ? 'trophy' : 'hourglass-outline';
   }
 
@@ -936,14 +936,14 @@ function SummaryCard({
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Text className="mr-2 text-base">{icon}</Text>
-          <Text className="text-sm font-bold text-gray-900">{title}</Text>
+          <Text className="text-sm font-bold text-gray-900 dark:text-gray-100">{title}</Text>
         </View>
 
         <View className={`flex-row items-center rounded-full px-2.5 py-1 ${badgeBg}`}>
           <Ionicons
             name={statusIcon}
             size={13}
-            color={isOver ? '#b91c1c' : isNear ? '#b45309' : '#047857'}
+            color={isOver ? '#ef4444' : isNear ? '#f59e0b' : '#10b981'}
           />
           <Text className={`ml-1 text-xs font-bold ${badgeText}`}>
             {statusText}
@@ -958,7 +958,7 @@ function SummaryCard({
           <CurrencyText
             amount={limit}
             currencySymbol={currencySymbol}
-            className="text-sm font-bold text-gray-800"
+            className="text-sm font-bold text-gray-800 dark:text-gray-200"
           />
         </View>
 
@@ -969,7 +969,7 @@ function SummaryCard({
           <CurrencyText
             amount={spent}
             currencySymbol={currencySymbol}
-            className={`text-sm font-bold ${isOver ? 'text-red-600' : 'text-gray-800'}`}
+            className={`text-sm font-bold ${isOver ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}`}
           />
         </View>
 
@@ -989,7 +989,7 @@ function SummaryCard({
 
       {/* Progress Bar & Percentage Consumed */}
       <View className="mt-3">
-        <View className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+        <View className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
           <View
             style={{
               width: `${Math.min(100, consumedPct)}%`,
@@ -999,7 +999,7 @@ function SummaryCard({
           />
         </View>
         <View className="mt-1 flex-row justify-between">
-          <Text className="text-[10px] font-medium text-gray-500">
+          <Text className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
             {consumedPct.toFixed(1)}% {isSavings ? 'of goal achieved' : 'consumed'}
           </Text>
           {isOver && (

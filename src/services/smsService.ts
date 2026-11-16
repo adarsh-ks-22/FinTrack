@@ -5,6 +5,7 @@
 // ============================================================
 
 import { PermissionsAndroid, Platform } from 'react-native';
+import { readSmsInbox, addSmsListener, isNativeSmsAvailable } from 'fintrack-sms';
 import { Category, ExpenseType, Source, TransactionRecord } from '@/types';
 import { parseSms, ParsedSmsResult } from './smsParser';
 import { useTransactionStore } from '@/stores/useTransactionStore';
@@ -310,3 +311,142 @@ export async function simulateIncomingSms(
 ): Promise<{ logged: boolean; parsed: ParsedSmsResult }> {
   return processIncomingSms(sampleSmsText, timestamp);
 }
+
+// --------------- Inbox Synchronization & Real-Time Listener ---------------
+
+/**
+ * Scans the native Android SMS inbox (content://sms/inbox) for bank debit alerts,
+ * parses each message, deduplicates against existing records, and auto-logs
+ * any un-updated debit transactions into WatermelonDB.
+ *
+ * @param limit Maximum number of recent SMS to scan (default: 150)
+ * @param daysBack How many days back to scan (default: 30 days)
+ * @returns Object with count of scanned and newly added transactions
+ */
+export async function syncSmsInbox(
+  limit: number = 150,
+  daysBack: number = 30
+): Promise<{ scanned: number; added: number }> {
+  const hasPermission = await checkSmsPermissions();
+  if (!hasPermission) {
+    const granted = await requestSmsPermissions();
+    if (!granted) {
+      showToast({
+        message: 'SMS permission is required to sync messages from your inbox.',
+        variant: 'warning',
+      });
+      return { scanned: 0, added: 0 };
+    }
+  }
+
+  try {
+    const sinceTimestamp = Date.now() - daysBack * 24 * 60 * 60 * 1000;
+    const messages = await readSmsInbox(limit, sinceTimestamp);
+
+    if (!messages || messages.length === 0) {
+      return { scanned: 0, added: 0 };
+    }
+
+    // Load existing transactions to avoid duplicate imports
+    const existingTxs = useTransactionStore.getState().transactions;
+    const existingSignatures = new Set<string>();
+
+    for (const tx of existingTxs) {
+      if (tx.rawSms) {
+        existingSignatures.add(tx.rawSms.trim().toLowerCase());
+      }
+      // Also match by timestamp proximity (within 3s) + amount
+      existingSignatures.add(`${Math.round(tx.timestamp / 3000)}_${tx.amount}`);
+    }
+
+    let addedCount = 0;
+
+    for (const msg of messages) {
+      const rawText = msg.body?.trim();
+      if (!rawText) continue;
+
+      // Quick deduplication check before heavy parsing
+      if (existingSignatures.has(rawText.toLowerCase())) {
+        continue;
+      }
+
+      const parsed = parseSms(rawText);
+      if (!parsed.isDebit || !parsed.amount || parsed.amount <= 0) {
+        continue;
+      }
+
+      const timeSignature = `${Math.round(msg.date / 3000)}_${parsed.amount}`;
+      if (existingSignatures.has(timeSignature)) {
+        continue;
+      }
+
+      // Add to WatermelonDB
+      const comments = `Auto: ${parsed.merchant || 'Bank Debit'}${
+        parsed.accountRef ? ` (${parsed.accountRef})` : ''
+      }`;
+
+      await useTransactionStore.getState().addTransaction({
+        amount: parsed.amount,
+        category: parsed.category,
+        expenseType: parsed.expenseType,
+        source: Source.SMS_Auto,
+        comments,
+        timestamp: msg.date,
+        rawSms: rawText,
+      });
+
+      existingSignatures.add(rawText.toLowerCase());
+      existingSignatures.add(timeSignature);
+      addedCount++;
+    }
+
+    if (addedCount > 0) {
+      useBudgetStore.getState().computeDerivedValues();
+      showToast({
+        message: `Synced ${addedCount} new transaction${addedCount > 1 ? 's' : ''} from SMS inbox!`,
+        variant: 'success',
+      });
+    } else {
+      showToast({
+        message: messages.length > 0
+          ? `Scanned ${messages.length} messages. All transactions are already up to date!`
+          : 'Inbox checked. No debit transactions found.',
+        variant: 'info',
+      });
+    }
+
+    return { scanned: messages.length, added: addedCount };
+  } catch (error) {
+    console.error('[smsService] syncSmsInbox error:', error);
+    showToast({
+      message: 'Failed to sync SMS messages. Please check permissions.',
+      variant: 'error',
+    });
+    return { scanned: 0, added: 0 };
+  }
+}
+
+let activeSmsSubscription: any = null;
+
+/**
+ * Initializes the real-time background/foreground SMS listener.
+ * Whenever an Android Telephony SMS_RECEIVED broadcast is emitted,
+ * this listener automatically captures and logs it.
+ */
+export function initRealtimeSmsListener(): () => void {
+  if (activeSmsSubscription) {
+    activeSmsSubscription.remove?.();
+    activeSmsSubscription = null;
+  }
+
+  activeSmsSubscription = addSmsListener(async (sms: { sender: string; body: string; date: number }) => {
+    console.log('[smsService] Real-time SMS broadcast received from:', sms.sender);
+    await processIncomingSms(sms.body, sms.date || Date.now());
+  });
+
+  return () => {
+    activeSmsSubscription?.remove?.();
+    activeSmsSubscription = null;
+  };
+}
+

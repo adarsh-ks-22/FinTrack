@@ -59,7 +59,7 @@ function ProgressRow({ label, spent, limit, currencySymbol, isSavings = false }:
     <View className="mb-4">
       {/* Label + amounts */}
       <View className="mb-1.5 flex-row items-center justify-between">
-        <Text className="text-sm font-semibold text-gray-700">{label}</Text>
+        <Text className="text-sm font-semibold text-gray-700 dark:text-gray-200">{label}</Text>
         <View className="flex-row items-center">
           <CurrencyText
             amount={spent}
@@ -76,7 +76,7 @@ function ProgressRow({ label, spent, limit, currencySymbol, isSavings = false }:
       </View>
 
       {/* Progress bar track */}
-      <View className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+      <View className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
         <Animated.View
           style={{
             height: '100%',
@@ -125,8 +125,8 @@ export function BudgetProgressBar() {
 
   if (!budget || budget.totalBudget === 0) {
     return (
-      <View className="mx-4 mb-3 rounded-2xl bg-white p-4 shadow-sm items-center">
-        <Text className="text-sm text-gray-500 mb-2">No budget set for this month.</Text>
+      <View className="mx-4 mb-3 rounded-2xl bg-white p-4 shadow-sm items-center border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+        <Text className="text-sm text-gray-500 mb-2 dark:text-gray-400">No budget set for this month.</Text>
         <Pressable
           onPress={() => router.push('/(tabs)/budget')}
           className="rounded-full bg-indigo-600 px-4 py-2"
@@ -138,8 +138,8 @@ export function BudgetProgressBar() {
   }
 
   return (
-    <View className="mx-4 mb-3 rounded-2xl bg-white p-4 shadow-sm">
-      <Text className="mb-3 text-sm font-bold text-gray-700 uppercase tracking-wide">
+    <View className="mx-4 mb-3 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+      <Text className="mb-3 text-sm font-bold text-gray-700 uppercase tracking-wide dark:text-gray-300">
         Budget Breakdown
       </Text>
       <ProgressRow

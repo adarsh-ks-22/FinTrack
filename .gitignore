@@ -9,8 +9,9 @@ dist/
 web-build/
 
 # native builds
-android/
-ios/
+/android/
+/ios/
+!modules/**
 
 # logs
 npm-debug.log*

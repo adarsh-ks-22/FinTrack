@@ -51,28 +51,28 @@ const CREDIT_REGEX = /\b(?:credited with|credited to|credited for|has been credi
 const BILL_DUE_REGEX = /\b(?:bill generated|due date|payment is due|minimum amount due|total amount due|reminder to pay)\b/i;
 
 // Debit indicators
-const DEBIT_KEYWORDS_REGEX = /\b(?:debited|debited for|debited by|debited with|paid|spent|withdrawn|sent|transferred to|transfer to|payment of|purchased at|txn of)\b/i;
+const DEBIT_KEYWORDS_REGEX = /\b(?:debited|debited for|debited by|debited with|debited from|paid|spent|withdrawn|sent|transferred to|transfer to|transfer of|payment of|payment to|purchased at|purchase of|txn of|transaction of|deducted|auto[- ]debited|charged|swiped at|swiped for|used at|used on)\b/i;
 
 // Regex patterns to extract amount explicitly associated with debit/payment
 const DEBIT_AMOUNT_PATTERNS = [
-  // "INR 450.00 debited" / "Rs. 1,299.00 debited" / "₹450 debited"
-  /(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:has\s+been\s+|is\s+|was\s+)?debited/i,
-  // "debited for/by/with/of INR 450.00" / "debited Rs. 450.00"
-  /debited\s*(?:for|by|with|of)?\s*(?:inr|rs\.?|₹)?\s*([\d,]+(?:\.\d{1,2})?)/i,
+  // "INR 450.00 debited" / "Rs. 1,299.00 debited" / "₹450 debited" / "deducted"
+  /(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:has\s+been\s+|is\s+|was\s+)?(?:debited|deducted|transferred|spent|withdrawn|paid)/i,
+  // "debited for/by/with/of INR 450.00" / "debited Rs. 450.00" / "deducted"
+  /(?:debited|deducted)\s*(?:for|by|with|of)?\s*(?:inr|rs\.?|₹)?\s*([\d,]+(?:\.\d{1,2})?)/i,
   // "Paid Rs.320 to" / "Paid ₹850 to" / "paid INR 500"
   /paid\s*(?:inr|rs\.?|₹)?\s*([\d,]+(?:\.\d{1,2})?)/i,
-  // "Payment of Rs 250"
-  /payment\s+of\s+(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i,
+  // "Payment of Rs 250" / "Payment to ... of Rs 250"
+  /payment(?:\s+to\s+[^,\n]+?)?\s+of\s+(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i,
   // "spent Rs. 500" / "spent INR 500" / "spent ₹500"
   /spent\s*(?:inr|rs\.?|₹)?\s*([\d,]+(?:\.\d{1,2})?)/i,
   // "Sent Rs. 420.00" / "sent INR 450"
   /sent\s*(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i,
   // "withdrawn Rs. 2500" / "WDL ... Rs.2500"
   /(?:withdrawn|wdl)\s*(?:for|of)?\s*(?:inr|rs\.?|₹)?\s*([\d,]+(?:\.\d{1,2})?)/i,
-  // "Rs 599.00 debited/spent/withdrawn/transferred"
-  /(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:spent|transferred|withdrawn|paid)/i,
+  // "Rs 599.00 debited/spent/withdrawn/transferred/deducted"
+  /(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:spent|transferred|withdrawn|paid|deducted)/i,
   // Fallback debit pattern: "debited ... Rs 500"
-  /debited[^\d\n\r]{0,30}(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i,
+  /(?:debited|deducted)[^\d\n\r]{0,30}(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i,
   // General fallback if debit context confirmed: "(INR|Rs|₹) 500.00"
   /(?:inr|rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i,
 ];

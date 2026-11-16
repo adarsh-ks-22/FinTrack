@@ -100,7 +100,7 @@ export default function HomeScreen() {
   const recentTransactions = currentMonthTransactions.slice(0, 5);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       {/* Toast Notification Container */}
       <ToastNotification />
 
@@ -117,14 +117,14 @@ export default function HomeScreen() {
         {/* ── 1. Total Expenditure Counter Card (Up to the current minute) ── */}
         <Animated.View
           style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
-          className="mx-4 mt-4 rounded-3xl bg-indigo-600 p-5 shadow-md"
+          className="mx-4 mt-4 rounded-3xl bg-indigo-600 p-5 shadow-md dark:bg-indigo-700"
         >
           {/* Header Row: Label + Live Time Marker */}
           <View className="flex-row items-center justify-between">
             <Text className="text-xs font-semibold uppercase tracking-wider text-indigo-200">
               Total Expenses This Month
             </Text>
-            <View className="flex-row items-center rounded-full bg-indigo-700/60 px-2.5 py-1">
+            <View className="flex-row items-center rounded-full bg-indigo-700/60 px-2.5 py-1 dark:bg-indigo-800/80">
               <View className="mr-1.5 h-2 w-2 rounded-full bg-green-400" />
               <Text className="text-[11px] font-medium text-indigo-100">
                 {currentMinuteText}
@@ -169,20 +169,20 @@ export default function HomeScreen() {
 
         {/* ── Visual Warning Banner When Budget Is Exceeded ── */}
         {budgetExceeded && (
-          <View className="mx-4 mt-3 flex-row items-center rounded-2xl bg-red-500/15 border border-red-400/40 p-3.5">
+          <View className="mx-4 mt-3 flex-row items-center rounded-2xl bg-red-500/15 border border-red-400/40 p-3.5 dark:bg-red-950/40 dark:border-red-900/60">
             <View className="mr-3 h-8 w-8 items-center justify-center rounded-full bg-red-500">
               <Ionicons name="warning" size={18} color="#ffffff" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-bold text-red-800">
+              <Text className="text-xs font-bold text-red-800 dark:text-red-200">
                 Monthly Budget Exceeded!
               </Text>
-              <Text className="text-xs text-red-700">
+              <Text className="text-xs text-red-700 dark:text-red-300">
                 You have spent{' '}
                 <CurrencyText
                   amount={totalSpent - totalBudget}
                   currencySymbol={currencySymbol}
-                  className="font-bold text-red-800"
+                  className="font-bold text-red-800 dark:text-red-200"
                 />{' '}
                 beyond your set limit.
               </Text>
@@ -193,18 +193,18 @@ export default function HomeScreen() {
         {/* ── 2. Navigation CTA: View All Transactions (DIRECTLY ABOVE Pie Chart) ── */}
         <Pressable
           onPress={() => router.push('/(tabs)/transactions')}
-          className="mx-4 mt-4 mb-2 flex-row items-center justify-between rounded-2xl bg-white px-4 py-3.5 shadow-sm border border-indigo-100"
+          className="mx-4 mt-4 mb-2 flex-row items-center justify-between rounded-2xl bg-white px-4 py-3.5 shadow-sm border border-indigo-100 dark:bg-gray-800 dark:border-gray-700"
           style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1, elevation: 1 }]}
         >
           <View className="flex-row items-center">
-            <View className="mr-3 h-9 w-9 items-center justify-center rounded-xl bg-indigo-50">
+            <View className="mr-3 h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/50">
               <Text className="text-base">📋</Text>
             </View>
             <View>
-              <Text className="text-sm font-bold text-gray-900">
+              <Text className="text-sm font-bold text-gray-900 dark:text-gray-100">
                 View All Transactions
               </Text>
-              <Text className="text-xs text-gray-500">
+              <Text className="text-xs text-gray-500 dark:text-gray-400">
                 Browse, search, and manage ledger entries
               </Text>
             </View>
@@ -224,12 +224,12 @@ export default function HomeScreen() {
 
         {/* ── 5. Recent Transactions Section ── */}
         <View className="mx-4 mt-3 mb-2 flex-row items-center justify-between">
-          <Text className="text-base font-bold text-gray-800">
+          <Text className="text-base font-bold text-gray-800 dark:text-gray-100">
             Recent Transactions
           </Text>
           {recentTransactions.length > 0 && (
             <Pressable onPress={() => router.push('/(tabs)/transactions')}>
-              <Text className="text-xs font-semibold text-indigo-600">See all</Text>
+              <Text className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">See all</Text>
             </Pressable>
           )}
         </View>

@@ -169,7 +169,7 @@ export function TransactionCard({ item, deletable = true }: TransactionCardProps
               friction: 10,
             }).start();
           }}
-          className="flex-row items-center rounded-2xl bg-white p-4 shadow-sm"
+          className="flex-row items-center rounded-2xl bg-white p-4 shadow-sm border border-transparent dark:bg-gray-800 dark:border-gray-700"
           style={{ elevation: 2 }}
         >
           {/* ── Left: Category badge + source icon ── */}
@@ -185,15 +185,15 @@ export function TransactionCard({ item, deletable = true }: TransactionCardProps
 
           {/* ── Center: Category + comment + date ── */}
           <View className="flex-1">
-            <Text className="text-sm font-semibold text-gray-800" numberOfLines={1}>
+            <Text className="text-sm font-semibold text-gray-800 dark:text-gray-100" numberOfLines={1}>
               {item.category}
             </Text>
             {item.comments ? (
-              <Text className="mt-0.5 text-xs text-gray-500" numberOfLines={1}>
+              <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400" numberOfLines={1}>
                 {item.comments}
               </Text>
             ) : null}
-            <Text className="mt-0.5 text-xs text-gray-400">{formattedDate}</Text>
+            <Text className="mt-0.5 text-xs text-gray-400 dark:text-gray-400">{formattedDate}</Text>
           </View>
 
           {/* ── Right: Amount ── */}

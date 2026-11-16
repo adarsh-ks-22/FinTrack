@@ -27,6 +27,7 @@ import {
   scheduleDailyEveningReview,
   rescheduleAllRecurringReminders,
 } from '@/services/notificationService';
+import { initRealtimeSmsListener, syncSmsInbox } from '@/services/smsService';
 
 // Helper: map WatermelonDB Transaction model → plain TransactionRecord
 function mapTransaction(t: Transaction): TransactionRecord {
@@ -147,6 +148,13 @@ export default function RootLayout() {
               setBudget(mapBudget(currentBudget));
             }
           });
+
+        // Initialize real-time SMS broadcast listener & background sync
+        const smsCleanup = initRealtimeSmsListener();
+        // Quietly sync any recent messages arrived while app was closed if permission is granted
+        if (useSettingsStore.getState().smsPermissionGranted) {
+          syncSmsInbox(50, 14).catch(() => {});
+        }
 
         setDbReady(true);
       } catch (error) {

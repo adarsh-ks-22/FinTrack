@@ -7,6 +7,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { useColorScheme } from 'nativewind';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -45,15 +46,18 @@ const TAB_CONFIG: TabConfig[] = [
 ];
 
 export default function TabsLayout() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#3b82f6',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: '#4f46e5',
+        tabBarInactiveTintColor: isDark ? '#9ca3af' : '#6b7280',
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e5e7eb',
+          backgroundColor: isDark ? '#111827' : '#ffffff',
+          borderTopColor: isDark ? '#1f2937' : '#e5e7eb',
           borderTopWidth: 1,
           paddingBottom: Platform.OS === 'ios' ? 0 : 4,
           height: Platform.OS === 'ios' ? 84 : 60,
