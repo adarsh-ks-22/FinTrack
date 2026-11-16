@@ -6,6 +6,7 @@
 // --------------- Enums ---------------
 
 export enum Category {
+  Bills = 'Bills',
   Entertainment = 'Entertainment',
   Groceries = 'Groceries',
   Travel = 'Travel',
@@ -17,6 +18,8 @@ export enum Category {
   Rent = 'Rent',
   Other = 'Other',
 }
+
+export type CategoryType = Category | string;
 
 export enum ExpenseType {
   Needs = 'Needs',
@@ -34,7 +37,7 @@ export enum Source {
 export interface TransactionRecord {
   id: string;
   amount: number;
-  category: Category;
+  category: Category | string;
   expenseType: ExpenseType;
   source: Source;
   comments?: string;
@@ -61,7 +64,7 @@ export interface RecurringPaymentRecord {
   id: string;
   name: string;
   amount: number;
-  category: Category;
+  category: Category | string;
   expenseType: ExpenseType;
   dueDay: number; // 1–31
   notifyDaysBefore: number;

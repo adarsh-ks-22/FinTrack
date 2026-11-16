@@ -33,7 +33,7 @@ import { ToastNotification, showToast } from '@/components/ui/ToastNotification'
 import { useBudgetStore } from '@/stores/useBudgetStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useRecurringStore } from '@/stores/useRecurringStore';
-import { CATEGORY_META } from '@/constants/categories';
+import { CATEGORY_META, getCategoryMeta } from '@/constants/categories';
 import { getOrdinalSuffix } from '@/services/notificationService';
 
 // Preset configurations
@@ -712,7 +712,7 @@ export default function BudgetScreen() {
           ) : (
             <View className="space-y-3">
               {sortedRecurring.map((item) => {
-                const meta = CATEGORY_META[item.category];
+                const meta = getCategoryMeta(item.category);
                 return (
                   <Pressable
                     key={item.id}

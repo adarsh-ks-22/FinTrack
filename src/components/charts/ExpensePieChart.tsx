@@ -17,14 +17,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { Category, TransactionRecord } from '@/types';
-import { CATEGORY_META } from '@/constants/categories';
+import { CATEGORY_META, getCategoryMeta } from '@/constants/categories';
 import { useTransactionStore } from '@/stores/useTransactionStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { CurrencyText } from '@/components/ui/CurrencyText';
 
 // --------------- Distinct Category Hex Colors ---------------
 
-export const CATEGORY_COLORS: Record<Category, string> = {
+export const CATEGORY_COLORS: Record<string, string> = {
+  [Category.Bills]: '#06b6d4',          // Cyan
   [Category.Food]: '#f97316',          // Orange
   [Category.Groceries]: '#10b981',     // Emerald
   [Category.Entertainment]: '#8b5cf6', // Violet
@@ -37,10 +38,32 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   [Category.Other]: '#64748b',         // Slate
 };
 
+const DYNAMIC_PALETTE = [
+  '#0284c7', // Sky 600
+  '#d97706', // Amber 600
+  '#059669', // Emerald 600
+  '#7c3aed', // Violet 600
+  '#db2777', // Pink 600
+  '#4f46e5', // Indigo 600
+  '#ca8a04', // Yellow 600
+  '#0d9488', // Teal 600
+];
+
+export function getCategoryColor(cat: string): string {
+  if (CATEGORY_COLORS[cat]) return CATEGORY_COLORS[cat];
+  let hash = 0;
+  for (let i = 0; i < cat.length; i++) {
+    hash = (hash << 5) - hash + cat.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % DYNAMIC_PALETTE.length;
+  return DYNAMIC_PALETTE[index];
+}
+
 // --------------- Types ---------------
 
 export interface CategorySlice {
-  category: Category;
+  category: string;
   amount: number;
   percentage: number;
   color: string;
@@ -53,7 +76,7 @@ export interface CategorySlice {
 export interface ExpensePieChartProps {
   transactions?: TransactionRecord[];
   currencySymbol?: string;
-  onSelectCategory?: (category: Category | null) => void;
+  onSelectCategory?: (category: string | null) => void;
 }
 
 // Total number of radial segments for the donut ring
@@ -75,10 +98,10 @@ export function ExpensePieChart({
   const transactions = propTransactions ?? storeTransactions;
   const currencySymbol = propCurrencySymbol ?? storeCurrencySymbol;
 
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const handleSelectCategory = useCallback(
-    (category: Category | null) => {
+    (category: string | null) => {
       const next = selectedCategory === category ? null : category;
       setSelectedCategory(next);
       if (onSelectCategory) {
@@ -90,7 +113,7 @@ export function ExpensePieChart({
 
   // Group transactions by category and compute proportions
   const { slices, totalSpend } = useMemo(() => {
-    const map = new Map<Category, number>();
+    const map = new Map<string, number>();
 
     for (const tx of transactions) {
       if (tx.amount > 0) {
@@ -109,17 +132,17 @@ export function ExpensePieChart({
       const pct = total > 0 ? (amt / total) * 100 : 0;
       const startPct = cumulative;
       cumulative += pct;
-      const meta = CATEGORY_META[cat];
+      const meta = getCategoryMeta(cat);
 
       computedSlices.push({
         category: cat,
         amount: amt,
         percentage: pct,
-        color: CATEGORY_COLORS[cat] || '#6366f1',
+        color: getCategoryColor(cat),
         startPct,
         endPct: cumulative,
-        icon: (meta?.icon as keyof typeof Ionicons.glyphMap) || 'pricetag',
-        label: meta?.label || cat,
+        icon: (meta.icon as keyof typeof Ionicons.glyphMap) || 'pricetag-outline',
+        label: meta.label || cat,
       });
     }
 

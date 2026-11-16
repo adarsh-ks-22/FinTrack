@@ -14,7 +14,7 @@ export class Transaction extends Model {
   amount: number;
 
   @field('category')
-  category: Category;
+  category: Category | string;
 
   @field('expense_type')
   expenseType: ExpenseType;

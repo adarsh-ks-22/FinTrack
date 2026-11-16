@@ -5,7 +5,13 @@
 
 import { Category, ExpenseType, CategoryMeta } from '@/types';
 
-export const CATEGORY_META: Record<Category, CategoryMeta> = {
+export const CATEGORY_META: Record<string, CategoryMeta> = {
+  [Category.Bills]: {
+    label: 'Bills',
+    icon: 'receipt-outline',
+    color: 'text-cyan-600',
+    defaultExpenseType: ExpenseType.Needs,
+  },
   [Category.Entertainment]: {
     label: 'Entertainment',
     icon: 'musical-notes',
@@ -69,6 +75,18 @@ export const CATEGORY_META: Record<Category, CategoryMeta> = {
 };
 
 export const ALL_CATEGORIES: Category[] = Object.values(Category);
+
+export function getCategoryMeta(cat: string): CategoryMeta {
+  if (cat in CATEGORY_META) {
+    return CATEGORY_META[cat];
+  }
+  return {
+    label: cat,
+    icon: 'pricetag-outline',
+    color: 'text-indigo-600',
+    defaultExpenseType: ExpenseType.Wants,
+  };
+}
 
 export const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   [ExpenseType.Needs]: 'Needs',

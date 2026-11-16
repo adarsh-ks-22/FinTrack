@@ -50,7 +50,7 @@ export interface MonthlySummaryData {
   savingsPctUsed: number;
   savingsStatus: 'On Track' | 'In Progress' | 'Exceeded' | 'No Target';
   categoryBreakdown: {
-    category: Category;
+    category: Category | string;
     count: number;
     total: number;
     pctOfTotal: number;
@@ -188,7 +188,7 @@ export async function fetchLedgerDataForMonth(
   const savingsPctUsed = savingsTarget > 0 ? Math.round((savingsSpent / savingsTarget) * 100) : 0;
 
   // 5. Category Breakdown Aggregation
-  const categoryMap = new Map<Category, { count: number; total: number }>();
+  const categoryMap = new Map<string, { count: number; total: number }>();
   for (const tx of monthTx) {
     const existing = categoryMap.get(tx.category) || { count: 0, total: 0 };
     categoryMap.set(tx.category, {
@@ -197,7 +197,8 @@ export async function fetchLedgerDataForMonth(
     });
   }
 
-  const categoryBreakdown = Object.values(Category)
+  const allCategories = Array.from(new Set([...Object.values(Category), ...categoryMap.keys()]));
+  const categoryBreakdown = allCategories
     .map((cat) => {
       const stats = categoryMap.get(cat) || { count: 0, total: 0 };
       const pctOfTotal = totalSpent > 0 ? Number(((stats.total / totalSpent) * 100).toFixed(1)) : 0;

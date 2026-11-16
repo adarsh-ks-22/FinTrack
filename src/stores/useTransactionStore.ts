@@ -13,7 +13,7 @@ import { Transaction } from '@/db/models/Transaction';
 
 export interface NewTransactionData {
   amount: number;
-  category: Category;
+  category: Category | string;
   expenseType: ExpenseType;
   source: Source;
   comments?: string;

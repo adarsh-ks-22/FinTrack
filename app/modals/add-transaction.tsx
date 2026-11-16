@@ -42,7 +42,7 @@ const transactionSchema = z.object({
     .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, {
       message: 'Amount must be a positive number greater than 0',
     }),
-  category: z.nativeEnum(Category, { required_error: 'Category is required' }),
+  category: z.string().min(1, 'Category is required'),
   expenseType: z.nativeEnum(ExpenseType, { required_error: 'Expense type is required' }),
   dateTimeStr: z
     .string()
@@ -103,6 +103,7 @@ export default function AddTransactionModal() {
   // Form state
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>(Category.Food);
+  const [customCategory, setCustomCategory] = useState('');
   const [expenseType, setExpenseType] = useState<ExpenseType>(ExpenseType.Wants);
   const [dateTimeStr, setDateTimeStr] = useState('');
   const [comments, setComments] = useState('');
@@ -138,7 +139,20 @@ export default function AddTransactionModal() {
       const collection = database.get<Transaction>('transactions');
       const record = await collection.find(id);
       setAmount(String(record.amount));
-      setCategory(record.category);
+
+      const isKnown = Object.values(Category).includes(record.category as Category) && record.category !== Category.Other;
+      if (isKnown) {
+        setCategory(record.category as Category);
+        setCustomCategory('');
+      } else if (record.category === Category.Other) {
+        setCategory(Category.Other);
+        setCustomCategory('');
+      } else {
+        // Custom category string (e.g., "Gym")
+        setCategory(Category.Other);
+        setCustomCategory(record.category);
+      }
+
       setExpenseType(record.expenseType);
       setComments(record.comments ?? '');
       const ist = formatInTimeZone(new Date(record.timestamp), IST_TIMEZONE, 'dd/MM/yyyy HH:mm');
@@ -150,8 +164,21 @@ export default function AddTransactionModal() {
     }
   }
 
+  function getEffectiveCategory(): string {
+    if (category === Category.Other && customCategory.trim().length > 0) {
+      return customCategory.trim();
+    }
+    return category;
+  }
+
   function validate(): boolean {
-    const result = transactionSchema.safeParse({ amount, category, expenseType, dateTimeStr });
+    const effectiveCategory = getEffectiveCategory();
+    const result = transactionSchema.safeParse({
+      amount,
+      category: effectiveCategory,
+      expenseType,
+      dateTimeStr,
+    });
     if (!result.success) {
       const fieldErrors: FormErrors = {};
       for (const issue of result.error.issues) {
@@ -184,6 +211,7 @@ export default function AddTransactionModal() {
 
     const parsedAmount = parseFloat(amount);
     const utcTimestamp = parseIstToUtcTimestamp(dateTimeStr);
+    const effectiveCategory = getEffectiveCategory();
 
     try {
       setIsSaving(true);
@@ -194,7 +222,7 @@ export default function AddTransactionModal() {
           const record = await collection.find(activeId);
           await record.update((t) => {
             t.amount = parsedAmount;
-            t.category = category;
+            t.category = effectiveCategory;
             t.expenseType = expenseType;
             t.comments = comments.trim() ? comments.trim() : null;
             t.timestamp = utcTimestamp;
@@ -202,7 +230,7 @@ export default function AddTransactionModal() {
         } else {
           await collection.create((t) => {
             t.amount = parsedAmount;
-            t.category = category;
+            t.category = effectiveCategory;
             t.expenseType = expenseType;
             t.source = Source.Manual;
             t.comments = comments.trim() ? comments.trim() : null;
@@ -334,6 +362,9 @@ export default function AddTransactionModal() {
                       key={cat}
                       onPress={() => {
                         setCategory(cat);
+                        if (cat !== Category.Other) {
+                          setCustomCategory('');
+                        }
                         setExpenseType(meta.defaultExpenseType);
                         setErrors((e) => ({ ...e, category: undefined }));
                       }}
@@ -354,6 +385,40 @@ export default function AddTransactionModal() {
                   );
                 })}
               </ScrollView>
+
+              {/* ── Custom Category Input (shown when 'Other' is selected) ── */}
+              {category === Category.Other && (
+                <View className="mt-3 rounded-2xl bg-indigo-50/70 p-3.5 border border-indigo-200">
+                  <View className="flex-row items-center justify-between mb-1.5">
+                    <Text className="text-xs font-bold text-indigo-950">
+                      Specify Category Name
+                    </Text>
+                    <Text className="text-[11px] font-semibold text-indigo-600">
+                      {customCategory.trim() ? `Tracked as "${customCategory.trim()}"` : 'Custom label'}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center rounded-xl bg-white px-3.5 border border-indigo-200">
+                    <Ionicons name="pricetag-outline" size={16} color="#6366f1" />
+                    <TextInput
+                      value={customCategory}
+                      onChangeText={(v) => {
+                        setCustomCategory(v);
+                        if (errors.category) setErrors((e) => ({ ...e, category: undefined }));
+                      }}
+                      placeholder="e.g. Gym, Pet Care, Insurance, Education..."
+                      placeholderTextColor="#9ca3af"
+                      className="ml-2 flex-1 py-2.5 text-sm font-semibold text-gray-800"
+                      returnKeyType="done"
+                      maxLength={30}
+                    />
+                    {customCategory.trim().length > 0 && (
+                      <Pressable onPress={() => setCustomCategory('')} className="p-1">
+                        <Ionicons name="close-circle" size={16} color="#9ca3af" />
+                      </Pressable>
+                    )}
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* ── Expense Type Segmented Control ── */}

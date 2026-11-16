@@ -17,7 +17,7 @@ import {
 export interface NewRecurringPaymentData {
   name: string;
   amount: number;
-  category: Category;
+  category: Category | string;
   expenseType: ExpenseType;
   dueDay: number;
   notifyDaysBefore: number;

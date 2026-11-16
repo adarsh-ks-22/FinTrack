@@ -44,7 +44,7 @@ const recurringSchema = z.object({
     .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, {
       message: 'Amount must be greater than 0',
     }),
-  category: z.nativeEnum(Category, { required_error: 'Category is required' }),
+  category: z.string().min(1, 'Category is required'),
   expenseType: z.nativeEnum(ExpenseType, { required_error: 'Expense type is required' }),
   dueDay: z
     .number()
@@ -111,6 +111,7 @@ export default function AddRecurringModal() {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>(Category.EMI);
+  const [customCategory, setCustomCategory] = useState('');
   const [expenseType, setExpenseType] = useState<ExpenseType>(ExpenseType.Needs);
   const [dueDay, setDueDay] = useState<number>(5);
   const [notifyDaysBefore, setNotifyDaysBefore] = useState<number>(2);
@@ -141,25 +142,25 @@ export default function AddRecurringModal() {
     try {
       // Check store first
       const found = recurringPayments.find((p) => p.id === targetId);
-      if (found) {
-        setName(found.name);
-        setAmount(String(found.amount));
-        setCategory(found.category);
-        setExpenseType(found.expenseType);
-        setDueDay(found.dueDay);
-        setNotifyDaysBefore(found.notifyDaysBefore);
-        setIsActive(found.isActive);
-      } else {
-        // Query DB
-        const collection = database.get<RecurringPayment>('recurring_payments');
-        const record = await collection.find(targetId);
-        setName(record.name);
-        setAmount(String(record.amount));
-        setCategory(record.category);
-        setExpenseType(record.expenseType);
-        setDueDay(record.dueDay);
-        setNotifyDaysBefore(record.notifyDaysBefore);
-        setIsActive(record.isActive);
+      const rec = found || (await database.get<RecurringPayment>('recurring_payments').find(targetId));
+      if (rec) {
+        setName(rec.name);
+        setAmount(String(rec.amount));
+        const recCategory = rec.category as string;
+        if (ALL_CATEGORIES.includes(recCategory as Category) && recCategory !== Category.Other) {
+          setCategory(recCategory as Category);
+          setCustomCategory('');
+        } else if (recCategory === Category.Other) {
+          setCategory(Category.Other);
+          setCustomCategory('');
+        } else {
+          setCategory(Category.Other);
+          setCustomCategory(recCategory || '');
+        }
+        setExpenseType(rec.expenseType);
+        setDueDay(rec.dueDay);
+        setNotifyDaysBefore(rec.notifyDaysBefore);
+        setIsActive(rec.isActive);
       }
     } catch (e) {
       console.error('[AddRecurringModal] Error loading existing payment:', e);
@@ -181,18 +182,30 @@ export default function AddRecurringModal() {
 
   const handleSelectCategory = (cat: Category) => {
     setCategory(cat);
+    if (cat !== Category.Other) {
+      setCustomCategory('');
+    }
     const meta = CATEGORY_META[cat];
     if (meta?.defaultExpenseType) {
       setExpenseType(meta.defaultExpenseType);
     }
   };
 
+  const getEffectiveCategory = (): string => {
+    if (category === Category.Other && customCategory.trim().length > 0) {
+      return customCategory.trim();
+    }
+    return category;
+  };
+
   const handleSave = async () => {
+    const effectiveCategory = getEffectiveCategory();
+
     // Validate with Zod
     const result = recurringSchema.safeParse({
       name,
       amount,
-      category,
+      category: effectiveCategory,
       expenseType,
       dueDay,
       notifyDaysBefore,
@@ -223,7 +236,7 @@ export default function AddRecurringModal() {
         await updateRecurringInDB(activeId, {
           name: name.trim(),
           amount: parsedAmount,
-          category,
+          category: effectiveCategory,
           expenseType,
           dueDay,
           notifyDaysBefore,
@@ -237,7 +250,7 @@ export default function AddRecurringModal() {
         await addRecurringToDB({
           name: name.trim(),
           amount: parsedAmount,
-          category,
+          category: effectiveCategory,
           expenseType,
           dueDay,
           notifyDaysBefore,
@@ -451,6 +464,34 @@ export default function AddRecurringModal() {
                     );
                   })}
                 </View>
+
+                {/* Custom Category Input if 'Other' is selected */}
+                {category === Category.Other && (
+                  <View className="mt-3">
+                    <Text className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
+                      Custom Category Name{' '}
+                      <Text className="text-gray-400 font-normal">
+                        ({customCategory.trim() ? `Tracked as "${customCategory.trim()}"` : 'Optional'})
+                      </Text>
+                    </Text>
+                    <View className="flex-row items-center rounded-2xl bg-gray-50 px-3.5 py-3 border border-indigo-200">
+                      <Ionicons name="pricetag-outline" size={18} color="#4f46e5" style={{ marginRight: 4 }} />
+                      <TextInput
+                        value={customCategory}
+                        onChangeText={setCustomCategory}
+                        placeholder="e.g. Gym, Subscriptions, Pet Care"
+                        placeholderTextColor="#9ca3af"
+                        className="flex-1 ml-2 text-sm font-semibold text-gray-900"
+                        autoCapitalize="words"
+                      />
+                      {customCategory.trim().length > 0 && (
+                        <TouchableOpacity onPress={() => setCustomCategory('')} hitSlop={6}>
+                          <Ionicons name="close-circle" size={16} color="#9ca3af" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                )}
               </View>
 
               {/* 4. Expense Type Picker (Needs / Wants / Savings) */}
