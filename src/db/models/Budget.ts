@@ -14,28 +14,28 @@ export class Budget extends Model {
    * This is the unique key per budget entry.
    */
   @field('month')
-  month!: number;
+  month: number;
 
   @field('total_budget')
-  totalBudget!: number;
+  totalBudget: number;
 
   /** Percentage allocated to Needs (0–100) */
   @field('needs_pct')
-  needsPct!: number;
+  needsPct: number;
 
   /** Percentage allocated to Wants (0–100) */
   @field('wants_pct')
-  wantsPct!: number;
+  wantsPct: number;
 
   /** Percentage allocated to Savings (0–100) */
   @field('savings_pct')
-  savingsPct!: number;
+  savingsPct: number;
 
   @readonly
   @date('created_at')
-  createdAt!: Date;
+  createdAt: Date;
 
   @readonly
   @date('updated_at')
-  updatedAt!: Date;
+  updatedAt: Date;
 }

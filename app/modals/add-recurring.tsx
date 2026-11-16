@@ -425,12 +425,12 @@ export default function AddRecurringModal() {
                     const meta = CATEGORY_META[cat];
                     const isSelected = category === cat;
                     return (
-                      <TouchableOpacity
+                      <Pressable
                         key={cat}
                         onPress={() => handleSelectCategory(cat)}
                         className={`flex-row items-center rounded-xl px-3 py-2 border ${
                           isSelected
-                            ? 'bg-indigo-600 border-indigo-600 shadow-xs'
+                            ? 'bg-indigo-600 border-indigo-600'
                             : 'bg-gray-50 border-gray-200'
                         }`}
                       >
@@ -447,7 +447,7 @@ export default function AddRecurringModal() {
                         >
                           {meta.label}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     );
                   })}
                 </View>
@@ -463,11 +463,11 @@ export default function AddRecurringModal() {
                     const isSelected = expenseType === et;
                     const cfg = EXPENSE_TYPE_CONFIG[et];
                     return (
-                      <TouchableOpacity
+                      <Pressable
                         key={et}
                         onPress={() => setExpenseType(et)}
-                        className={`flex-1 flex-row items-center justify-center rounded-xl py-2.5 transition-all ${
-                          isSelected ? `${cfg.activeClass} shadow-xs` : 'bg-transparent'
+                        className={`flex-1 flex-row items-center justify-center rounded-xl py-2.5 ${
+                          isSelected ? cfg.activeClass : 'bg-transparent'
                         }`}
                       >
                         <Text className="mr-1.5 text-xs">{cfg.icon}</Text>
@@ -478,7 +478,7 @@ export default function AddRecurringModal() {
                         >
                           {cfg.label}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     );
                   })}
                 </View>
@@ -507,12 +507,12 @@ export default function AddRecurringModal() {
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
                     const isSelected = dueDay === d;
                     return (
-                      <TouchableOpacity
+                      <Pressable
                         key={d}
                         onPress={() => setDueDay(d)}
                         className={`h-9 w-9 items-center justify-center rounded-xl border ${
                           isSelected
-                            ? 'bg-indigo-600 border-indigo-600 shadow-sm'
+                            ? 'bg-indigo-600 border-indigo-600'
                             : 'bg-white border-gray-200'
                         }`}
                       >
@@ -523,7 +523,7 @@ export default function AddRecurringModal() {
                         >
                           {d}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     );
                   })}
                 </ScrollView>
@@ -564,12 +564,12 @@ export default function AddRecurringModal() {
                   {NOTIFY_DAYS_PRESETS.map((days) => {
                     const isSelected = notifyDaysBefore === days;
                     return (
-                      <TouchableOpacity
+                      <Pressable
                         key={days}
                         onPress={() => setNotifyDaysBefore(days)}
                         className={`flex-1 items-center justify-center rounded-xl py-2.5 border ${
                           isSelected
-                            ? 'bg-indigo-600 border-indigo-600 shadow-xs'
+                            ? 'bg-indigo-600 border-indigo-600'
                             : 'bg-white border-gray-200'
                         }`}
                       >
@@ -580,7 +580,7 @@ export default function AddRecurringModal() {
                         >
                           {days} {days === 1 ? 'day' : 'days'}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     );
                   })}
                 </View>

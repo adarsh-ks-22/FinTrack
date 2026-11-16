@@ -11,34 +11,34 @@ export class RecurringPayment extends Model {
   static table = 'recurring_payments';
 
   @field('name')
-  name!: string;
+  name: string;
 
   @field('amount')
-  amount!: number;
+  amount: number;
 
   @field('category')
-  category!: Category;
+  category: Category;
 
   @field('expense_type')
-  expenseType!: ExpenseType;
+  expenseType: ExpenseType;
 
   /** Day of month (1–31) when payment is due */
   @field('due_day')
-  dueDay!: number;
+  dueDay: number;
 
   /** How many days before due_day to send a notification */
   @field('notify_days_before')
-  notifyDaysBefore!: number;
+  notifyDaysBefore: number;
 
   /** Whether this recurring payment is currently active */
   @field('is_active')
-  isActive!: boolean;
+  isActive: boolean;
 
   @readonly
   @date('created_at')
-  createdAt!: Date;
+  createdAt: Date;
 
   @readonly
   @date('updated_at')
-  updatedAt!: Date;
+  updatedAt: Date;
 }

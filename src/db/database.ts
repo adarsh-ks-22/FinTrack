@@ -6,6 +6,8 @@
 
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import { NativeModules, Platform } from 'react-native';
 
 import { schema } from './schema';
 import { Transaction } from './models/Transaction';
@@ -17,16 +19,33 @@ import { formatInTimeZone } from 'date-fns-tz';
 
 // --------------- Adapter ---------------
 
-const adapter = new SQLiteAdapter({
-  schema,
-  // Migrations array — will be populated in future phases
-  migrations: undefined,
-  // Use JSI if available (faster)
-  jsi: true,
-  onSetUpError: (error) => {
-    console.error('[WatermelonDB] Setup error:', error);
-  },
-});
+// In Expo Go, third-party native modules are not bundled into the prebuilt client.
+// If WMDatabaseBridge is present (e.g. in Expo Dev Client / prebuild), use SQLiteAdapter.
+// Otherwise, seamlessly fall back to LokiJSAdapter so the app runs smoothly in Expo Go.
+const hasNativeBridge =
+  Platform.OS !== 'web' &&
+  Boolean(
+    (NativeModules as any)?.WMDatabaseBridge ||
+    (globalThis as any)?.nativeWatermelonCreateAdapter
+  );
+
+const adapter = hasNativeBridge
+  ? new SQLiteAdapter({
+      schema,
+      migrations: undefined,
+      jsi: true,
+      onSetUpError: (error) => {
+        console.error('[WatermelonDB] SQLite setup error:', error);
+      },
+    })
+  : new LokiJSAdapter({
+      schema,
+      useWebWorker: false,
+      useIncrementalIndexedDB: false,
+      onSetUpError: (error) => {
+        console.error('[WatermelonDB] LokiJS setup error:', error);
+      },
+    });
 
 // --------------- Database singleton ---------------
 

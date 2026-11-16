@@ -11,31 +11,31 @@ export class Transaction extends Model {
   static table = 'transactions';
 
   @field('amount')
-  amount!: number;
+  amount: number;
 
   @field('category')
-  category!: Category;
+  category: Category;
 
   @field('expense_type')
-  expenseType!: ExpenseType;
+  expenseType: ExpenseType;
 
   @field('source')
-  source!: Source;
+  source: Source;
 
   @field('comments')
-  comments!: string | null;
+  comments: string | null;
 
   @field('timestamp')
-  timestamp!: number;
+  timestamp: number;
 
   @field('raw_sms')
-  rawSms!: string | null;
+  rawSms: string | null;
 
   @readonly
   @date('created_at')
-  createdAt!: Date;
+  createdAt: Date;
 
   @readonly
   @date('updated_at')
-  updatedAt!: Date;
+  updatedAt: Date;
 }

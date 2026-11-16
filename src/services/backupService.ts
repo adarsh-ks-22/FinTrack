@@ -6,7 +6,7 @@
 // ============================================================
 
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { exportDatabaseBackupJSON } from '@/db/database';
 
 export async function exportDatabaseBackup(): Promise<{ filePath: string; success: boolean }> {
